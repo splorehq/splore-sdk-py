@@ -29,5 +29,3 @@ class ExtractionService:
         return self.api_client.request(method='GET', endpoint='extractions', params=params)
     def all_extracted_response(self):
         return self.api_client.request(method='GET', endpoint='extractions')
-    
-    
