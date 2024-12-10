@@ -1,8 +1,3 @@
-Certainly! Below is the complete content of the **README** in markdown format:
-
----
-
-```markdown
 # Splore Python SDK
 
 The Splore Python SDK simplifies the process of interacting with the Splore document processing platform. Use it to upload files, process documents, and retrieve extracted data with minimal setup.
@@ -156,7 +151,3 @@ For questions or issues, please open a ticket on [GitHub Issues](https://github.
 ## License
 
 This SDK is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
-```
-
----
