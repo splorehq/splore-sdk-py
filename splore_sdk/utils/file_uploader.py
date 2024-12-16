@@ -97,7 +97,8 @@ class FileUploader:
             encoded_metadata = self.encode_metadata(final_metadata)
 
             # Upload to TUS server
-            uploader = self.tus_client.uploader(file_path=temp_file_path, metadata=encoded_metadata)
+            chunk_size = 5 * 1024 * 1024 # 5MB chunk size
+            uploader = self.tus_client.uploader(file_path=temp_file_path, metadata=encoded_metadata, chunk_size=chunk_size)
             uploader.upload()
 
             # Return the file id
