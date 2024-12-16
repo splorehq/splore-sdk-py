@@ -2,6 +2,7 @@ import os
 import tempfile
 from typing import Optional, IO, Dict
 from tusclient import client
+import mimetypes
 
 class FileUploader:
     def __init__(self, tus_url: str, auto_cleanup: bool = True):
@@ -39,7 +40,9 @@ class FileUploader:
             Dict[str, str]: Default metadata including filename, filetype, and customExtractionEnabled.
         """
         filename = os.path.basename(file_path)
-        filetype = os.path.splitext(filename)[1][1:]  # Extract file extension without the dot
+        filetype = os.path.splitext(filename)[1][1:]
+        mime_type, _ = mimetypes.guess_file_type(file_path)
+        filetype = mime_type if mime_type else filetype
 
         return {
             "filename": filename,
