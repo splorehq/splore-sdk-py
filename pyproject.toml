@@ -5,7 +5,7 @@ description = "splore sdk to intract with splore services"
 authors = [
     {name = "DilipCoder", email = "dilips.ven@splore.com"},
 ]
-dependencies = ["requests>=2.32.3", "pydantic>=2.9.2"]
+dependencies = ["requests>=2.32.3", "pydantic>=2.9.2", "tuspy>=1.1.0"]
 requires-python = ">=3.13"
 readme = "README.md"
 license = {text = "MIT"}

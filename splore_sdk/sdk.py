@@ -1,10 +1,10 @@
-from splore_sdk.core.exceptions import APIError, ValidationError
+from time import sleep
+from typing import IO, Optional
 from splore_sdk.core.logger import sdk_logger
 from splore_sdk.core.validators import FilePathInput
 from splore_sdk.extractions.extractions_service import ExtractionService
 from splore_sdk.core.api_client import APIClient
-import os
-import tempfile
+from splore_sdk.utils.file_uploader import FileUploader
 
 class SploreSDK:
     def __init__(self, api_key: str, agent_id:str):
@@ -16,50 +16,41 @@ class SploreSDK:
         self.logger.info("SploreSDK initialized.")
         self.client = APIClient('https://splore.st', api_key=self.api_key)
         self.extractions = ExtractionService(self.client)
+        self.file_uploader = FileUploader('https://splore.st/api/files')
+        
+    def extract(self, file_path: Optional[str] = None, file_stream: Optional[IO] = None):
+        """run the extraction pipeline by uploading a file.
 
-    def upload_file_for_extraction(self, file_path: str, template_id: str):
-        """
-        Handles file uploads for local files, remote URLs, or AWS S3 paths.
-        """
-        try:
-            payload = FilePathInput(
-                file_path=file_path,
-                template_id=template_id,
-                agent_id=self.agent_id,
-            )
-            self.logger.info(f"Validated payload: {payload}")
-            if os.path.isfile(file_path):
-                self.logger.info("Processing local file")
-                return self._upload_file(payload.file_path, payload.template_id)
-            elif self._is_valid_url(file_path):
-                # Remote URL
-                self.logger.info("Processing remote URL")
-                with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-                    self._download_remote_file(file_path, tmp_file.name)
-                    return self._upload_file(tmp_file.name, payload.template_id)
-            else:
-                raise ValidationError("Unsupported file path type")
-        except ValidationError as e:
-            self.logger.error(f"Validation Error: {e}")
-            raise
-        except APIError as e:
-            self.logger.error(f"API Error: {e}")
-            raise
+        Args:
+            file_path (Optional[str], optional): provide a local file path if available
+            file_stream (Optional[IO], optional): provide a file object/blob if available
 
-    def _upload_file(self, local_file_path: str, template_id: str):
-        """
-        Handles the final file upload to the API.
-        """
-        file_payload = {
-            "file_id": self.base_id,
-            "agent_id": self.agent_id,
-            "template_id": template_id,
-        }
-        self.logger.info(f"Uploading file: {local_file_path}")
-        with open(local_file_path, "rb") as file:
-            file_payload["file"] = file
-            return self.extractions.upload_file(file_payload)
+        Raises:
+            ValueError: One of file_path or file_stream must be provided.
 
+        Returns:
+            Dict: extracted response data from the file. 
+        """
+        if not (file_path or file_stream):
+            raise ValueError("One of file_path or file_stream must be provided.")
+        # upload file using file uploader
+        self.logger.info(f"file upload started for file: {file_path}")
+        upload_res = self.file_uploader.upload_file(file_path=file_path, file_stream=file_stream)
+        self.logger.info(f"file upload completd with file_id: {upload_res}")
+        # call start extraction after file upload is completed
+        self.extractions.start(file_id=upload_res)
+        self.logger.info(f"file extraction started")
+        # check status 
+        extraction_completed = False
+        while(not extraction_completed):
+            extraction_resp = self.extractions.processing_status(file_id=upload_res)
+            file_processing_status = extraction_resp.get("fileProcessingStatus")
+            extraction_completed = (file_processing_status == "COMPLETED")
+            self.logger.info(f"file extraction not completed waiting")
+            sleep(10)
+        
+        extracted_resp = self.extractions.extracted_response(file_id=upload_res)
+        return extracted_resp
 
 
     
