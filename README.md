@@ -48,13 +48,15 @@ import tempfile
 from examples.aws import download_from_s3
 
 # Initialize the SDK
-sdk = SploreSDK(api_key="YOUR_API_KEY", agent_id="YOUR_AGENT_ID")
+sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID", agent_id="YOUR_OPTIONAL_AGENT_ID")
 
 # Download the file from AWS S3
 with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
     s3_uri = "s3://bucket-name/path-to-file.pdf"
     download_from_s3(s3_uri, tmp_file.name)
     
+    # agent_id is mandatory for extractions
+    sdk.extractions.set_agent("your_agent_id")
     # Upload the file
     file_upload_response = sdk.extractions.upload_file(tmp_file.name)
     file_id = file_upload_response.get('file_id')

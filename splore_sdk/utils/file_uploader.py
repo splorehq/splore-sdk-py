@@ -1,19 +1,20 @@
 import os
 import tempfile
 from typing import Optional, IO, Dict
+from splore_sdk.core.constants import FILE_UPLOAD_URL
 from tusclient import client
 import mimetypes
 
+
 class FileUploader:
-    def __init__(self, tus_url: str, auto_cleanup: bool = True):
+    def __init__(self, auto_cleanup: bool = True):
         """
         Initializes the FileUploader instance.
 
         Args:
-            tus_url (str): The TUS server URL.
             auto_cleanup (bool): Whether to automatically clean up temporary files.
         """
-        self.tus_client = client.TusClient(tus_url)
+        self.tus_client = client.TusClient(FILE_UPLOAD_URL)
         self.temp_files = []
         self.auto_cleanup = auto_cleanup
 

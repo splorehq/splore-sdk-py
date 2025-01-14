@@ -1,12 +1,14 @@
+from typing import Optional
 import requests
 from .exceptions import APIError
 from .logger import sdk_logger
 from .constants import BASE_URL
 
 class APIClient:
-    def __init__(self, api_key: str, agent_id: str, base_url: str | None):
+    def __init__(self, api_key: str, base_id: str, agent_id: Optional[str], base_url: Optional[str]):
         self.api_key = api_key
         self.agent_id = agent_id
+        self.base_id = base_id
         self.base_url = base_url if base_url else BASE_URL
         self.logger = sdk_logger
         self.logger.debug(f"api client initialised with api_key:${self.api_key}, base_url: ${base_url}")

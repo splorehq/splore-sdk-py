@@ -1,24 +1,25 @@
 from time import sleep
 from typing import IO, Optional
 from splore_sdk.core.logger import sdk_logger
-from splore_sdk.core.validators import FilePathInput
 from splore_sdk.extractions.extractions_service import ExtractionService
+from splore_sdk.agents.agents_service import AgentService
 from splore_sdk.core.api_client import APIClient
 from splore_sdk.utils.file_uploader import FileUploader
 
 class SploreSDK:
-    def __init__(self, api_key: str, agent_id:str):
+    def __init__(self, api_key: str, base_id:str, agent_id: Optional[str]):
         self.logger = sdk_logger
         if not api_key:
             raise ValueError("API Key is required to initialize SploreSDK.")
-        self.agent_id = agent_id
+        self.base_id = base_id
         self.api_key = api_key
         self.logger.info("SploreSDK initialized.")
-        self.client = APIClient('https://splore.st', api_key=self.api_key)
-        self.extractions = ExtractionService(self.client)
-        self.file_uploader = FileUploader('https://splore.st/api/files')
+        self.client = APIClient(api_key=self.api_key, base_id=base_id)
+        self.extractions = ExtractionService(self.client, agent_id=agent_id)
+        self.file_uploader = FileUploader()
+        self.agents = AgentService(self.client)
         
-    def extract(self, file_path: Optional[str] = None, file_stream: Optional[IO] = None):
+    def extract(self, agent_id: str, file_path: Optional[str] = None, file_stream: Optional[IO] = None):
         """run the extraction pipeline by uploading a file.
 
         Args:
@@ -33,6 +34,10 @@ class SploreSDK:
         """
         if not (file_path or file_stream):
             raise ValueError("One of file_path or file_stream must be provided.")
+        if not agent_id:
+            raise ValueError("agent_id is required for extraction flow")
+        
+        self.extractions.set_agent(agent_id=agent_id)
         # upload file using file uploader
         self.logger.info(f"file upload started for file: {file_path}")
         upload_res = self.file_uploader.upload_file(file_path=file_path, file_stream=file_stream)

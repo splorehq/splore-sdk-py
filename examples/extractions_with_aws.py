@@ -2,8 +2,8 @@ from splore_sdk import SploreSDK
 from examples.aws import download_from_s3
 
 ##  example -1 (basic flow to complete extraction using S3)
-# intialise the sdk with API key and agentId from splore console
-sdk = SploreSDK(api_key="", agent_id="")
+# intialise the sdk with API key base_id and agentId from splore console
+sdk = SploreSDK(api_key="", base_id="", agent_id="")
 
 # create a temporary file destination to download file from s3.
 file_ref = sdk.file_uploader.create_temp_file_destination()
