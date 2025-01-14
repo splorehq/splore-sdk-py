@@ -11,6 +11,7 @@ The Splore Python SDK simplifies the process of interacting with the Splore docu
 - **Data Retrieval**: Fetch structured results after processing is completed.
 - **Modular Design**: Easily integrate with storage backends like AWS S3.
 - **Error Handling**: Get meaningful errors and retry capabilities.
+- **Agent Management**: Manage agents, including creation, updates, retrieval, and deletion.
 
 ---
 
@@ -22,7 +23,7 @@ Install the SDK via pip:
 pip install splore-sdk
 ```
 
-Install the SDK via pip with (optional example dependecies):
+Install the SDK via pip with (optional example dependencies):
 
 ```bash
 pip install splore-sdk[examples]
@@ -86,7 +87,7 @@ This is the main entry point for the SDK.
   ```python
   sdk = SploreSDK(api_key="YOUR_API_KEY", agent_id="YOUR_AGENT_ID")
   ```
-- Provides access to `extractions`.
+- Provides access to `extractions` and `agent_service`.
 
 ### `ExtractionManager`
 Manage file processing and data extraction.
@@ -96,6 +97,37 @@ Manage file processing and data extraction.
   - `start(file_id: str) -> None`: Starts the extraction process for the uploaded file.
   - `processing_status(file_id: str) -> dict`: Retrieves the current status of the processing task.
   - `extracted_response(file_id: str) -> dict`: Fetches the processed data.
+
+### `AgentService`
+Manage agents, including creation, updates, retrieval, and deletion.
+
+- **Methods**:
+  - `create_agent(agent_payload: CreateAgentInput) -> dict`: Creates a new agent with the specified payload.
+    ```python
+    from splore_sdk.validations import CreateAgentInput
+
+    agent_payload = CreateAgentInput(agentName="Agent1", description="Sample Agent")
+    response = sdk.agent_service.create_agent(agent_payload)
+    print(response)
+    ```
+  - `update_agent(agent_payload: UpdateAgentInput) -> dict`: Updates an existing agent.
+    ```python
+    from splore_sdk.validations import UpdateAgentInput
+
+    update_payload = UpdateAgentInput(agentId="123", agentName="UpdatedAgent")
+    response = sdk.agent_service.update_agent(update_payload)
+    print(response)
+    ```
+  - `get_agents(agentId: Optional[str], agentName: Optional[str]) -> dict`: Retrieves agents based on the provided criteria.
+    ```python
+    agents = sdk.agent_service.get_agents(agentId="123", agentName=None)
+    print(agents)
+    ```
+  - `delete_agents(agentId: str) -> dict`: Deletes the specified agent.
+    ```python
+    response = sdk.agent_service.delete_agents(agentId="123")
+    print(response)
+    ```
 
 ### `AWS Integration`
 Easily download files from AWS S3 using:
@@ -138,7 +170,7 @@ except FileUploadError as e:
 - Asynchronous support will be added in a future release.
 
 ### 3. Which file formats are supported?
-- currently we are supporting PDF files only.
+- Currently, we are supporting PDF files only.
 
 ---
 
