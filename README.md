@@ -54,27 +54,33 @@ sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID", agent_id="YOUR_O
 with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
     s3_uri = "s3://bucket-name/path-to-file.pdf"
     download_from_s3(s3_uri, tmp_file.name)
-    
-    # agent_id is mandatory for extractions
-    sdk.extractions.set_agent("your_agent_id")
+
+    # fetch agents related to your base
+    agents = sdk.get_agents()
+
+    agent_id1 = agents[0][id] # adjust according to your response and agent you want to select
+    agent_id2 = agents[1][id]
+    extraction_agent = sdk.init_agent(agent_id = agent_id1)
+    chat_agent = sdk.init_agent(agent_id = agent_id2)
+
     # Upload the file
-    file_upload_response = sdk.extractions.upload_file(tmp_file.name)
+    file_upload_response = extraction_agent.extractions.upload_file(tmp_file.name)
     file_id = file_upload_response.get('file_id')
     if file_id is None:
         raise RuntimeError("File upload failed!")
 
     # Start the extraction process
-    sdk.extractions.start(file_id=file_id)
+    extraction_agent.extractions.start(file_id=file_id)
 
     # Monitor extraction status
     while True:
-        status = sdk.extractions.processing_status(file_id=file_id)
+        status = extraction_agent.extractions.processing_status(file_id=file_id)
         if status.get("fileProcessingStatus") == "COMPLETED":
             break
         sleep(10)  # Wait before checking again
 
     # Retrieve extracted data
-    extracted_data = sdk.extractions.extracted_response(file_id=file_id)
+    extracted_data = extraction_agent.extractions.extracted_response(file_id=file_id)
     print("Extracted Data:", extracted_data)
 ```
 
