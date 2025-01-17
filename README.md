@@ -48,7 +48,7 @@ import tempfile
 from examples.aws import download_from_s3
 
 # Initialize the SDK
-sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID", agent_id="YOUR_OPTIONAL_AGENT_ID")
+sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
 
 # Download the file from AWS S3
 with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
@@ -58,8 +58,8 @@ with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
     # fetch agents related to your base
     agents = sdk.get_agents()
 
-    agent_id1 = agents[0][id] # adjust according to your response and agent you want to select
-    agent_id2 = agents[1][id]
+    agent_id1 = agents[0]["id"] # adjust according to your response and agent you want to select
+    agent_id2 = agents[1]["id"]
     extraction_agent = sdk.init_agent(agent_id = agent_id1)
     chat_agent = sdk.init_agent(agent_id = agent_id2)
 
@@ -112,7 +112,7 @@ Manage agents, including creation, updates, retrieval, and deletion.
 - **Methods**:
   - `create_agent(agent_payload: CreateAgentInput) -> dict`: Creates a new agent with the specified payload.
     ```python
-    from splore_sdk.validations import CreateAgentInput
+    from splore_sdk.agents.validations import CreateAgentInput
 
     agent_payload = CreateAgentInput(agentName="Agent1", description="Sample Agent")
     response = sdk.agent_service.create_agent(agent_payload)
@@ -120,7 +120,7 @@ Manage agents, including creation, updates, retrieval, and deletion.
     ```
   - `update_agent(agent_payload: UpdateAgentInput) -> dict`: Updates an existing agent.
     ```python
-    from splore_sdk.validations import UpdateAgentInput
+    from splore_sdk.agents.validations import UpdateAgentInput
 
     update_payload = UpdateAgentInput(agentId="123", agentName="UpdatedAgent")
     response = sdk.agent_service.update_agent(update_payload)
