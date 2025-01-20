@@ -6,7 +6,7 @@ from splore_sdk.core.exceptions import AgentIdError
 class ExtractionService:
     def __init__(self, api_client: APIClient, agent_id: str):
         self.api_client = api_client
-        self.extraction_prefix = 'api/rest/v2/extractions/'
+        self.extraction_prefix = 'api/rest/v2/extractions'
         self.api_client.agent_id = agent_id
     
     def set_agent(self, agent_id):
@@ -16,7 +16,7 @@ class ExtractionService:
         return self.extraction_prefix + endpoint
     
     def upload_file(self, fileObj):
-        return self.api_client.request(method='POST', endpoint=self.endpoint('files'), files=fileObj)
+        return self.api_client.request(method='POST', endpoint=self.endpoint('/files'), files=fileObj)
 
     def start(self, file_id: str):
         if self.api_client.agent_id == None:
@@ -26,7 +26,7 @@ class ExtractionService:
             agent_id=self.api_client.agent_id,
             file_id=file_id,
         )
-        return self.api_client.request(method='POST', endpoint=self.endpoint('start'), json=payload.model_dump())
+        return self.api_client.request(method='POST', endpoint=self.endpoint('/start'), json=payload.model_dump())
     
     def processing_status(self, file_id: str):
         if self.api_client.agent_id == None:
@@ -36,7 +36,7 @@ class ExtractionService:
                 'agentId': self.api_client.agent_id,
                 'fileId': file_id
             }
-        return self.api_client.request(method='GET', endpoint=self.endpoint('status'), params=params)
+        return self.api_client.request(method='GET', endpoint=self.endpoint('/status'), params=params)
    
     def extracted_response(self, file_id:str):
         if self.api_client.agent_id == None:
@@ -46,7 +46,12 @@ class ExtractionService:
             'agentId': self.api_client.agent_id,
             'fileId': file_id
         }
-        return self.api_client.request(method='GET', endpoint=self.endpoint('extractions'), params=params)
+        return self.api_client.request(method='GET', endpoint=self.endpoint(''), params=params)
     
-    def all_extracted_response(self):
-        return self.api_client.request(method='GET', endpoint=self.endpoint('extractions'))
+    def all_extracted_response(self, page: Optional[int] = 0, size: Optional[int] = 10, compact:Optional[bool] = True):
+        params = {
+            "page": page,
+            "size": size,
+            "compact": compact
+        }
+        return self.api_client.request(method='GET', endpoint=self.endpoint(''), params=params)

@@ -1,12 +1,11 @@
 from typing import Optional
-from .validations import StartExtractionInput
 from splore_sdk.core.api_client import APIClient
 from .validations import CreateAgentInput, UpdateAgentInput
 
 class AgentService:
     def __init__(self, api_client: APIClient):
         self.api_client = api_client
-        self.agent_prefix = '/api/rest/v2/'
+        self.agent_prefix = 'api/rest/v2/'
         
     def endpoint(self, endpoint):
         return self.agent_prefix + endpoint
@@ -17,7 +16,7 @@ class AgentService:
     def update_agent(self, agent_payload: UpdateAgentInput):
         return self.api_client.request(method='PUT', endpoint=self.endpoint('agents'), json=agent_payload.model_dump())
     
-    def get_agents(self, agentId: Optional[str], agentName: Optional[str]):
+    def get_agents(self, agentId: Optional[str]=None, agentName: Optional[str]=None):
         params = {}
         if agentId:
             params['agentId'] = agentId

@@ -14,15 +14,14 @@ class SploreSDK:
             raise ValueError("API Key is required to initialize SploreSDK.")
         self.base_id = base_id
         self.api_key = api_key
-        self.logger.info("SploreSDK initialized.")
         self.client = APIClient(api_key=self.api_key, base_id=base_id, agent_id=agent_id)
-        self.extractions = ExtractionService(self.client)
         self.file_uploader = FileUploader()
         self.agents = AgentService(self.client)
+        self.logger.info("SploreSDK initialized.")
 
-    def get_agents(self):
+    def get_agents(self, agentId: Optional[str]=None, agentName: Optional[str]=None):
         """Fetch the list of agents related to the base."""
-        return self.agents.get_agents()
+        return self.agents.get_agents(agentId=agentId, agentName=agentName)
 
     def init_agent(self, agent_id: str) -> "AgentSDK":
         """
@@ -44,6 +43,8 @@ class AgentSDK(SploreSDK):
     def __init__(self, api_key: str, base_id: str, agent_id: str):
         super().__init__(api_key, base_id, agent_id)
         self.agent_id = agent_id
+        self.client = APIClient(api_key=self.api_key, base_id=base_id, agent_id=agent_id)
+        self.extractions = ExtractionService(self.client, agent_id=agent_id)
 
     def extract(self, file_path: Optional[str] = None, file_stream: Optional[IO] = None) -> Dict:
         """

@@ -3,8 +3,25 @@ import tempfile
 from typing import Optional, IO, Dict
 from splore_sdk.core.constants import FILE_UPLOAD_URL
 from tusclient import client
+from tusclient.uploader import Uploader
 import mimetypes
 
+
+class ProgressUploader(Uploader):
+    def __init__(self, *args, progress=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.uploaded_bytes = 0
+        self.progress = progress
+
+    def upload_chunk(self):
+        super().upload_chunk()
+        self.uploaded_bytes += self.chunk_size
+        if self.progress:
+            self.progress_callback(self.uploaded_bytes, self.get_file_size())
+
+    def progress_callback(self, uploaded_bytes, total_bytes):
+        progress = (uploaded_bytes / total_bytes) * 100
+        print(f"Uploaded: {uploaded_bytes} / {total_bytes} bytes ({progress:.2f}%)")
 
 class FileUploader:
     def __init__(self, auto_cleanup: bool = True):
@@ -99,7 +116,7 @@ class FileUploader:
 
             # Upload to TUS server
             chunk_size = 5 * 1024 * 1024 # 5MB chunk size
-            uploader = self.tus_client.uploader(file_path=temp_file_path, metadata=encoded_metadata, chunk_size=chunk_size)
+            uploader = ProgressUploader(client=self.tus_client, file_path=temp_file_path, metadata=encoded_metadata, chunk_size=chunk_size)
             uploader.upload()
 
             # Return the file id
@@ -131,4 +148,5 @@ class FileUploader:
             except OSError:
                 pass
         self.temp_files.clear()
+
 
