@@ -5,6 +5,15 @@ description = "splore sdk to intract with splore services"
 authors = [
     {name = "DilipCoder", email = "dilips.ven@splore.com"},
 ]
+
+homepage = "https://splore.com/"
+repository = "https://github.com/splorehq/splore-sdk-py"
+api_documentation = "https://docs.splore.com/"
+readme = "README.md"
+
+[project.urls]
+"Changelog" = "https://github.com/splorehq/splore-sdk-py/changelog"
+
 dependencies = ["requests>=2.32.3", "pydantic>=2.9.2", "tuspy>=1.1.0"]
 requires-python = ">=3.9"
 readme = "README.md"
@@ -29,4 +38,6 @@ build-backend = "pdm.backend"
 
 [tool.pdm]
 exclude = ["examples"]
+[tool.pdm]
+include = ["README.md", "CHANGELOG.md"]
 distribution = true
