@@ -1,6 +1,11 @@
 # Changelog
 
 ---
+## [0.1.7] - 2025-02-12
+### imporvements
+- added project meta data for better visiblity and issue tracking
+
+---
 ## [0.1.6] - 2025-02-12
 ### imporvements
 - added changelog to track updates

@@ -1,6 +1,6 @@
 [project]
 name = "splore-sdk"
-version = "0.1.6"
+version = "0.1.7"
 description = "splore sdk to intract with splore services"
 authors = [
     {name = "DilipCoder", email = "dilips.ven@splore.com"},
@@ -12,7 +12,9 @@ api_documentation = "https://docs.splore.com/"
 readme = "README.md"
 
 [project.urls]
-"Changelog" = "https://github.com/splorehq/splore-sdk-py/changelog"
+"Changelog" = "https://github.com/splorehq/splore-sdk-py/blob/main/CHANGELOG.MD"
+"Issues" = "https://github.com/splorehq/splore-sdk-py/issues"
+"Releases" = "https://github.com/splorehq/splore-sdk-py/releases"
 
 dependencies = ["requests>=2.32.3", "pydantic>=2.9.2", "tuspy>=1.1.0"]
 requires-python = ">=3.9"
