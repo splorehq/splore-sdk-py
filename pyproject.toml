@@ -1,6 +1,6 @@
 [project]
-name = "splore-sdk"
-version = "0.1.7"
+name = "splore_sdk"
+version = "0.1.9"
 description = "splore sdk to interact with splore services"
 authors = [
     {name = "DilipCoder", email = "dilips.ven@splore.com"},
@@ -40,5 +40,7 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm.build]
-includes = ["README.md", "CHANGELOG.md"]
+includes = ["splore_sdk", "README.md", "CHANGELOG.md"]
+excludes = ["tests", "examples"]
 distribution = true
+wheel = true

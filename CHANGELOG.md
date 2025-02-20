@@ -1,6 +1,16 @@
 # Changelog
 
 ---
+## [0.1.9] - 2025-02-21
+### imporvements
+- added version to the package
+- fixed package installation issue
+---
+## [0.1.8] - 2025-02-12
+### imporvements
+- package name renaming as per python naming convention
+
+---
 ## [0.1.7] - 2025-02-12
 ### imporvements
 - added project meta data for better visiblity and issue tracking
