@@ -1,12 +1,13 @@
 # Changelog
 
 ---
-## [0.1.9] - 2025-02-21
+## [0.1.11] - 2025-02-21
+## [0.1.10] - 2025-02-21
 ### imporvements
 - added version to the package
 - fixed package installation issue
 ---
-## [0.1.8] - 2025-02-12
+## [0.1.8] - [0.1.9]- 2025-02-12
 ### imporvements
 - package name renaming as per python naming convention
 

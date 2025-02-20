@@ -1,6 +1,6 @@
 [project]
-name = "splore_sdk"
-version = "0.1.9"
+name = "splore-sdk"
+version = "0.1.11"
 description = "splore sdk to interact with splore services"
 authors = [
     {name = "DilipCoder", email = "dilips.ven@splore.com"},
