@@ -1,6 +1,7 @@
 # Changelog
 
 ---
+## [0.1.13] - 2025-02-25
 ## [0.1.12] - 2025-02-25
 ### improvements
 - fixed metadata issue in file uploader
