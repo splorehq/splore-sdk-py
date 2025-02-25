@@ -14,20 +14,20 @@ class SploreSDK:
             raise ValueError("API Key is required to initialize SploreSDK.")
         self.base_id = base_id
         self.api_key = api_key
+        self.agent_id = agent_id
         self.user_id = user_id
-        self.client = APIClient(api_key=self.api_key, base_id=base_id, agent_id=agent_id)
-        self.file_uploader = FileUploader(api_key=self.api_key, base_id=self.base_id, user_id=self.user_id)
+        self.client = APIClient(api_key=self.api_key, base_id=base_id)
         self.agents = AgentService(self.client)
+        self.file_uploader = FileUploader(api_key=self.api_key, base_id=self.base_id, user_id=self.user_id)
         self.validate_api_key()
-        self.logger.info("SploreSDK API Key validated.")
-        if agent_id:
-            self.logger.info(f"Initializing agent with ID: {agent_id}")
-            return self.init_agent(agent_id)
         self.logger.info("SploreSDK initialized with base_id: %s", self.base_id)
 
     def validate_api_key(self):
-        """Validate the API key."""
-        return self.client.validate_api_key()
+        try:
+            self.client.validate_api_key()
+        except Exception as e:
+            self.logger.debug(f"API Key validation failed: {e}")
+            raise ValueError(f"API Key validation failed")
     
     def get_agents(self, agentId: Optional[str]=None, agentName: Optional[str]=None):
         """Fetch the list of agents related to the base."""

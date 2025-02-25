@@ -37,6 +37,7 @@ class FileUploader:
         self.temp_files = []
         self.auto_cleanup = auto_cleanup
         self.base_id = base_id
+        self.user_id = user_id
     def create_temp_file_destination(self) -> str:
         """
         Creates a temporary file destination path to be used for downloads.
@@ -76,7 +77,7 @@ class FileUploader:
             "customExtractionEnabled": "true",
             "isDataFile": "true",
             "baseId": self.base_id,
-            "userId": self.user_id
+            "userId": self.user_id if self.user_id else None
         }
 
     def encode_metadata(self, metadata: Dict[str, any]) -> Dict[str, str]:

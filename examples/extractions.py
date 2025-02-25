@@ -7,9 +7,12 @@ sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
 extraction_agent = sdk.init_agent(agent_id="YOUR_AGENT_ID")
 
 # basic extraction flow
-extraction_agent.extract(file_path="absolute_file_path")
+extracted_data = extraction_agent.extract(file_path="absolute_file_path")
+print("Extracted Data:", extracted_data)
+
+# get all extracted response
 response = extraction_agent.extractions.all_extracted_response()
-print(response)
+print("All Extracted Response:", response)
 
 # Upload file
 file_response = extraction_agent.file_uploader.upload_file(file_path="absolute_file_path")

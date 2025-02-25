@@ -15,7 +15,7 @@ class APIClient:
         
     def validate_api_key(self):
         """Validate the API key."""
-        return self.request(method="GET", endpoint="/api/rest/v2/authenticate", headers={"X-API-KEY": self.api_key})
+        return self.request(method="GET", endpoint="api/rest/v2/authenticate")
         
     def request(self, method: str, endpoint: str, **kwargs):
         headers = kwargs.pop("headers", {})
