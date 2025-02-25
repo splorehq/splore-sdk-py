@@ -12,8 +12,7 @@ response = extraction_agent.extractions.all_extracted_response()
 print(response)
 
 # Upload file
-with open("sample.pdf", "rb") as file:
-    file_response = extraction_agent.file_uploader.upload_file(file)
+file_response = extraction_agent.file_uploader.upload_file(file_path="absolute_file_path")
 
 file_id = file_response.get("fileId")
 print("File uploaded with ID:", file_id)

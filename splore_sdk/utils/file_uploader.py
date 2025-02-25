@@ -5,7 +5,7 @@ from splore_sdk.core.constants import FILE_UPLOAD_URL
 from tusclient import client
 from tusclient.uploader import Uploader
 import mimetypes
-
+import time
 
 class ProgressUploader(Uploader):
     def __init__(self, *args, progress=True, **kwargs):
@@ -24,17 +24,19 @@ class ProgressUploader(Uploader):
         print(f"Uploaded: {uploaded_bytes} / {total_bytes} bytes ({progress:.2f}%)")
 
 class FileUploader:
-    def __init__(self, auto_cleanup: bool = True):
+    def __init__(self, api_key: str, base_id: str, user_id: Optional[str] = None, auto_cleanup: bool = True):
         """
         Initializes the FileUploader instance.
 
         Args:
             auto_cleanup (bool): Whether to automatically clean up temporary files.
+            base_id (str): The base id of the Splore base.
+            api_key (str): The API key for the Splore base.
         """
-        self.tus_client = client.TusClient(FILE_UPLOAD_URL)
+        self.tus_client = client.TusClient(FILE_UPLOAD_URL, headers={"X-API-KEY": api_key})
         self.temp_files = []
         self.auto_cleanup = auto_cleanup
-
+        self.base_id = base_id
     def create_temp_file_destination(self) -> str:
         """
         Creates a temporary file destination path to be used for downloads.
@@ -47,26 +49,34 @@ class FileUploader:
         self.temp_files.append(tmp_file.name)
         return tmp_file.name
 
-    def generate_default_metadata(self, file_path: str) -> Dict[str, str]:
+    def generate_default_metadata(self, file_path: Optional[str] = None, file_stream: Optional[IO] = None) -> Dict[str, str]:
         """
         Generates default metadata for the uploaded file.
 
         Args:
             file_path (str): The path of the file to upload.
-
+            file_stream (IO): The file stream to upload.
         Returns:
             Dict[str, str]: Default metadata including filename, filetype, and customExtractionEnabled.
         """
-        filename = os.path.basename(file_path)
-        filetype = os.path.splitext(filename)[1][1:]
-        mime_type, _ = mimetypes.guess_file_type(file_path)
+        if file_path:
+            filename = os.path.basename(file_path)
+            filetype = os.path.splitext(filename)[1][1:]
+            mime_type, _ = mimetypes.guess_file_type(file_path)
+        elif file_stream:
+            filename = os.path.basename(file_stream.name)
+            filetype = os.path.splitext(filename)[1][1:]
+            mime_type, _ = mimetypes.guess_file_type(file_stream.name)
         filetype = mime_type if mime_type else filetype
-
+        timestamp = int(time.time())
+        filename = f"{timestamp}_{filename}"
         return {
             "filename": filename,
             "filetype": filetype,
             "customExtractionEnabled": "true",
-            "isDataFile": "true"
+            "isDataFile": "true",
+            "baseId": self.base_id,
+            "userId": self.user_id
         }
 
     def encode_metadata(self, metadata: Dict[str, any]) -> Dict[str, str]:
@@ -105,12 +115,17 @@ class FileUploader:
             # Determine the file path
             if file_path:
                 temp_file_path = os.path.normpath(os.path.abspath(file_path))
+                default_metadata = self.generate_default_metadata(file_path=temp_file_path)
             elif file_stream:
                 temp_file_path = self.create_temp_file_destination()
+                default_metadata = self.generate_default_metadata(file_stream=file_stream)
                 self._write_stream_to_tmp(file_stream, temp_file_path)
 
             # Generate default metadata and merge with user-provided metadata
-            default_metadata = self.generate_default_metadata(temp_file_path)
+            
+            if metadata and "filename" in metadata:
+                timestamp = int(time.time())
+                metadata["filename"] = f"{timestamp}_{metadata['filename']}"
             final_metadata = {**default_metadata, **(metadata or {})}
             encoded_metadata = self.encode_metadata(final_metadata)
 

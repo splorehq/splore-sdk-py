@@ -65,15 +65,13 @@ from time import sleep
 sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
 
 # Get all agents
-agents = sdk.get_agents()
+agents = sdk.agents.get_agents()
 agent_id = agents[0]["id"]  # Adjust as needed
 
 # Initialize agent
 extraction_agent = sdk.init_agent(agent_id=agent_id)
 
-# Upload file
-with open("path/to/file.pdf", "rb") as file:
-    upload_response = extraction_agent.file_uploader.upload_file(file)
+upload_response = extraction_agent.file_uploader.upload_file(file_path="path/to/file.pdf")
 
 file_id = upload_response.get("fileId")
 print("File uploaded with ID:", file_id)

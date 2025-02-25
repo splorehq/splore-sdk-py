@@ -13,6 +13,9 @@ class APIClient:
         self.logger = sdk_logger
         self.logger.debug(f"api client initialised with api_key:${self.api_key}, base_url: ${base_url}")
         
+    def validate_api_key(self):
+        """Validate the API key."""
+        return self.request(method="GET", endpoint="/api/rest/v2/authenticate", headers={"X-API-KEY": self.api_key})
         
     def request(self, method: str, endpoint: str, **kwargs):
         headers = kwargs.pop("headers", {})
