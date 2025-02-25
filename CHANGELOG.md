@@ -1,6 +1,14 @@
 # Changelog
 
 ---
+## [0.1.12] - 2025-02-25
+### improvements
+- fixed metadata issue in file uploader
+- added agent_id[Optional parameter] to the sdk to directly initialize an AgentSDK
+- added user_id[Optional parameter] to trace user activity
+- changed api url for file upload
+
+---
 ## [0.1.11] - 2025-02-21
 ## [0.1.10] - 2025-02-21
 ### imporvements
