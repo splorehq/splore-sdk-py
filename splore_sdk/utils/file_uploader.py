@@ -20,7 +20,8 @@ class ProgressUploader(Uploader):
             self.progress_callback(self.uploaded_bytes, self.get_file_size())
 
     def progress_callback(self, uploaded_bytes, total_bytes):
-        progress = (uploaded_bytes / total_bytes) * 100
+        # file size will be less than total_bytes as we are uploading the metadata with file chunk.
+        progress = min(1.00, (uploaded_bytes / total_bytes)) * 100
         print(f"Uploaded: {uploaded_bytes} / {total_bytes} bytes ({progress:.2f}%)")
 
 class FileUploader:
@@ -38,14 +39,17 @@ class FileUploader:
         self.auto_cleanup = auto_cleanup
         self.base_id = base_id
         self.user_id = user_id
-    def create_temp_file_destination(self) -> str:
+    def create_temp_file_destination(self, file_extension: str) -> str:
         """
         Creates a temporary file destination path to be used for downloads.
+
+        Args:
+            file_extension (str): The desired file extension for the temporary file.
 
         Returns:
             str: Path to the temporary file.
         """
-        tmp_file = tempfile.NamedTemporaryFile(delete=False)
+        tmp_file = tempfile.NamedTemporaryFile(suffix=file_extension, delete=False)
         tmp_file.close()
         self.temp_files.append(tmp_file.name)
         return tmp_file.name
@@ -74,8 +78,8 @@ class FileUploader:
         return {
             "filename": filename,
             "filetype": filetype,
-            "customExtractionEnabled": "true",
-            "isDataFile": "true",
+            "customExtractionEnabled": True,
+            "isDataFile": True,
             "baseId": self.base_id,
             "userId": self.user_id if self.user_id else None
         }

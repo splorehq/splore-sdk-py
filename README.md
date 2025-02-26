@@ -53,7 +53,7 @@ pip install splore-sdk[examples]
 ### Prerequisites  
 
 1. **API Key and Base ID**: Obtain these from the Splore console.  
-2. **Python 3.7+**: Ensure Python is installed.  
+2. **Python 3.9+**: Ensure Python is installed.  
 
 ### Quick Start Example  
 
@@ -71,6 +71,7 @@ agent_id = agents[0]["id"]  # Adjust as needed
 # Initialize agent
 extraction_agent = sdk.init_agent(agent_id=agent_id)
 
+# use unix based file path.
 upload_response = extraction_agent.file_uploader.upload_file(file_path="path/to/file.pdf")
 
 file_id = upload_response.get("fileId")
@@ -114,20 +115,20 @@ print("Create Agent Response:", create_response)
 
 # Get agent details
 agent_id = create_response.get("id")
-get_response = sdk.get_agents(agentId=agent_id)
+get_response = sdk.agents.get_agents(agentId=agent_id)
 print("Get Agent Response:", get_response)
 
 # Get all agents
-all_agents = sdk.get_agents()
+all_agents = sdk.agents.get_agents()
 print("All Agents:", all_agents)
 
 # Update the agent
 update_payload = {"name": "Updated Agent Name"}
-update_response = sdk.update_agent(agent_payload=update_payload)
+update_response = sdk.agents.update_agent(agent_payload=update_payload)
 print("Update Agent Response:", update_response)
 
 # Delete the agent
-delete_response = sdk.delete_agents(agentId=agent_id)
+delete_response = sdk.agents.delete_agents(agentId=agent_id)
 print("Delete Agent Response:", delete_response)
 ```
 
@@ -149,14 +150,16 @@ sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
 extraction_agent = sdk.init_agent(agent_id="YOUR_AGENT_ID")
 
 # Basic extraction flow
-extraction_agent.extract(file_path="absolute_file_path")
-response = extraction_agent.extractions.all_extracted_response()
-print(response)
+extracted_response = extraction_agent.extract(file_path="absolute_file_path")
+print(extracted_response)
+
+# advanced extraction flow
 
 # Upload file
 with open("sample.pdf", "rb") as file:
     file_response = extraction_agent.file_uploader.upload_file(file)
 
+# store file ids for next steps
 file_id = file_response.get("fileId")
 print("File uploaded with ID:", file_id)
 
@@ -164,11 +167,11 @@ print("File uploaded with ID:", file_id)
 start_response = extraction_agent.extractions.start(file_id=file_id)
 print("Extraction started:", start_response)
 
-# Check processing status
+# Check processing status and look for status_response is COMPLETED.
 status_response = extraction_agent.extractions.processing_status(file_id=file_id)
 print("Processing status:", status_response)
 
-# Get extracted response
+# Get extracted response once status is COMPLETED
 extracted_data = extraction_agent.extractions.extracted_response(file_id=file_id)
 print("Extracted Data:", extracted_data)
 ```
@@ -179,7 +182,8 @@ print("Extracted Data:", extracted_data)
 
 Upload files to Splore for processing.  
 
-#### Example Usage  
+#### Example Usage
+- example-1: Open and upload file for extraction
 
 ```python
 from splore_sdk import SploreSDK
@@ -187,10 +191,46 @@ from splore_sdk import SploreSDK
 # Initialize SDK
 sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
 
-# Open and upload file
+# use unix based file path.
 with open("path/to/your/file.pdf", "rb") as file:
     response = sdk.file_uploader.upload_file(file_stream=file)
     print("Upload Response:", response)
+```
+- example-2: Open and upload file for normal extraction
+
+```python
+from splore_sdk import SploreSDK
+
+# Initialize SDK
+sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
+
+metadata = {
+    "file_name": "your_file_name", # it will be saved as 
+    "customeExtractionEnabled": "false", # it will be uploaded for normal extraction
+}
+# use unix based file path.
+with open("path/to/your/file.pdf", "rb") as file:
+    response = sdk.file_uploader.upload_file(file_stream=file, metadata=metadata)
+    print("Upload Response:", response)
+```
+
+- example-3: Open and upload file for other than data points.
+
+```python
+from splore_sdk import SploreSDK
+
+# Initialize SDK
+sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
+metadata = {
+    "file_name": "your_file_name", # it will be saved as 
+    "customeExtractionEnabled": "false",
+    "isDataFile": "false",  # it will be uploaded as normal file. can't be used for extraction.
+}
+# use unix based file path.
+with open("path/to/your/file.pdf", "rb") as file:
+    response = sdk.file_uploader.upload_file(file_stream=file, metadata=metadata)
+    print("Upload Response:", response)
+
 ```
 
 ---
@@ -212,7 +252,7 @@ sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
 extraction_agent = sdk.init_agent(agent_id="YOUR_AGENT_ID")
 
 # Create a temporary file destination
-file_ref = sdk.file_uploader.create_temp_file_destination()
+file_ref = sdk.file_uploader.create_temp_file_destination(file_extension=".pdf")
 s3_uri = "s3://abc/def/abc.pdf"
 
 # Download file from S3

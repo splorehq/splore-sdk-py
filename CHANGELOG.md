@@ -1,6 +1,14 @@
 # Changelog
 
 ---
+## [0.1.15] - 2025-02-26
+### improvements
+- progress bar issue fixed
+- added file extension to temp file destination
+- added examples for multi purpose file upload
+- fixed documentation issues
+
+---
 ## [0.1.14] - 2025-02-25
 ## [0.1.13] - 2025-02-25
 ## [0.1.12] - 2025-02-25
