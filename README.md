@@ -53,9 +53,28 @@ pip install splore-sdk[examples]
 ### Prerequisites  
 
 1. **API Key and Base ID**: Obtain these from the Splore console.  
-2. **Python 3.9+**: Ensure Python is installed.  
+2. **Python 3.13+**: Ensure Python is installed.  
 
-### Quick Start Example  
+### Quick Start Example
+
+```python
+from splore_sdk import __version__
+print("Splore SDK Version:", __version__)
+```
+
+```python
+from splore_sdk import SploreSDK
+
+# Initialize SDK
+sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
+
+# Initialize Agent for extraction
+extraction_agent = sdk.init_agent(agent_id="YOUR_AGENT_ID")
+
+# Basic extraction flow
+extracted_response = extraction_agent.extract(file_path="absolute_file_path")
+print(extracted_response)
+```
 
 ```python
 from splore_sdk import SploreSDK
@@ -74,7 +93,7 @@ extraction_agent = sdk.init_agent(agent_id=agent_id)
 # use unix based file path.
 upload_response = extraction_agent.file_uploader.upload_file(file_path="path/to/file.pdf")
 
-file_id = upload_response.get("fileId")
+file_id = upload_response
 print("File uploaded with ID:", file_id)
 
 # Start extraction
@@ -138,7 +157,7 @@ print("Delete Agent Response:", delete_response)
 
 Handle document processing and extraction.  
 
-#### Example Usage  
+#### Example Usage
 
 ```python
 from splore_sdk import SploreSDK
@@ -160,8 +179,12 @@ with open("sample.pdf", "rb") as file:
     file_response = extraction_agent.file_uploader.upload_file(file)
 
 # store file ids for next steps
-file_id = file_response.get("fileId")
+file_id = file_response
 print("File uploaded with ID:", file_id)
+
+# Check processing status and look for status_response is INDEXED.
+status_response = extraction_agent.extractions.processing_status(file_id=file_id)
+print("Processing status:", status_response)
 
 # Start extraction
 start_response = extraction_agent.extractions.start(file_id=file_id)
@@ -174,6 +197,34 @@ print("Processing status:", status_response)
 # Get extracted response once status is COMPLETED
 extracted_data = extraction_agent.extractions.extracted_response(file_id=file_id)
 print("Extracted Data:", extracted_data)
+```
+
+#### multiprocessing
+```python
+from splore_sdk import SploreSDK
+import multiprocessing
+
+def extract_data(api_key, base_id, agent_id, file_path):
+    sdk = SploreSDK(api_key=api_key, base_id=base_id)
+    extraction_agent = sdk.init_agent(agent_id=agent_id)
+    extracted_data = extraction_agent.extract(file_path=file_path)
+    print("=========================================")
+    print("File Path:", file_path)
+    print("Extracted Data:", extracted_data)
+
+if __name__ == "__main__":
+    api_key = "YOUR_API_KEY"
+    base_id = "YOUR_BASE_ID"
+    agent_id = "YOUR_AGENT_ID"
+    file_paths = ["absolute_file_path1", "absolute_file_path2"]
+    processes = []
+    for file_path in file_paths:
+        p = multiprocessing.Process(target=extract_data, args=(api_key, base_id, agent_id, file_path))
+        processes.append(p)
+        p.start()
+    for p in processes:
+        p.join()
+
 ```
 
 ---

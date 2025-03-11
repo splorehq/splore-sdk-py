@@ -49,7 +49,15 @@ class FileUploader:
         Returns:
             str: Path to the temporary file.
         """
-        tmp_file = tempfile.NamedTemporaryFile(suffix=file_extension, delete=False)
+        print("file_extension",file_extension)
+        _, extension = os.path.splitext(file_extension) 
+        # Get the directory where the script using the SDK is located
+        script_directory = os.path.dirname(os.path.abspath(__file__))
+
+        # Ensure the directory exists
+        temp_dir = os.path.join(script_directory, "temp_files")
+        os.makedirs(temp_dir, exist_ok=True)
+        tmp_file = tempfile.NamedTemporaryFile(suffix=extension, dir=temp_dir, delete=False)
         tmp_file.close()
         self.temp_files.append(tmp_file.name)
         return tmp_file.name
@@ -122,7 +130,7 @@ class FileUploader:
                 temp_file_path = os.path.normpath(os.path.abspath(file_path))
                 default_metadata = self.generate_default_metadata(file_path=temp_file_path)
             elif file_stream:
-                temp_file_path = self.create_temp_file_destination()
+                temp_file_path = self.create_temp_file_destination(file_extension=file_stream.name)
                 default_metadata = self.generate_default_metadata(file_stream=file_stream)
                 self._write_stream_to_tmp(file_stream, temp_file_path)
 

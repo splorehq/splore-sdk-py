@@ -1,6 +1,12 @@
 # Changelog
 
 ---
+## [0.1.16] - 2025-02-26
+### improvements
+- fixed packages to support python 3.13 onwards
+
+
+---
 ## [0.1.15] - 2025-02-26
 ### improvements
 - progress bar issue fixed
