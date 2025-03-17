@@ -1,6 +1,14 @@
 # Changelog
 
 ---
+## [0.1.17] - 2025-03-17
+### improvements
+- added example in doc for multiprocessing
+- added file pointer to use least privilleged location
+- added support for python 3.8n and above
+- increase test coverage for stability
+
+---
 ## [0.1.16] - 2025-02-26
 ### improvements
 - fixed packages to support python 3.13 onwards

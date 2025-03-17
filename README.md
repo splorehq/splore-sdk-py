@@ -53,7 +53,7 @@ pip install splore-sdk[examples]
 ### Prerequisites  
 
 1. **API Key and Base ID**: Obtain these from the Splore console.  
-2. **Python 3.13+**: Ensure Python is installed.  
+2. **Python 3.8+**: Ensure Python is installed.  
 
 ### Quick Start Example
 

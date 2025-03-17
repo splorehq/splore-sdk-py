@@ -15,4 +15,3 @@ s3_uri = "s3://abc/def/abc.pdf"
 download_from_s3(s3_uri, file_ref)
 response = extraction_agent.extract(file_path=file_ref)
 print(response)
-    

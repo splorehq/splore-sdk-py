@@ -3,16 +3,18 @@ import requests
 from splore_sdk.core.exceptions import APIError
 from splore_sdk.core.logger import sdk_logger
 
+
 def is_valid_url(self, url: str):
-        """
-        Checks if a string is a valid URL.
-        """
-        try:
-            result = urlparse(url)
-            return all([result.scheme, result.netloc])
-        except ValueError:
-            return False
-        
+    """
+    Checks if a string is a valid URL.
+    """
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc])
+    except ValueError:
+        return False
+
+
 def download_remote_file(self, url: str, destination: str):
     """
     Downloads a remote file to a local destination.

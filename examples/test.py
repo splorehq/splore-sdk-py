@@ -1,7 +1,43 @@
-from splore_sdk import __version__
-print("Splore SDK Version:", __version__)
-# Importing the SploreSDK class from the splore_sdk module
-print()
-sdk = SploreSDK(api_key = "19c74cec-c7d0-46be-9e13-8d6c90c84f2a",base_id = "STEN2e2WJpBB9B2Xa9fb9GSpHNXuRqU")
-agents = sdk.agents.get_agents(agentId="ABSC2s3iTPIe41JFnluTC9WeceSIFEj")
-print(agents)
+import time
+import concurrent.futures
+from splore_sdk.sdk import SploreSDK, AgentSDK
+
+
+agent_id = "agent_id"
+base_id = "base_id"
+api_key = "api_key"
+save_result = False
+file_name = "file_name"
+
+def sdk_test(data):
+    try:
+        sdk = SploreSDK(api_key=api_key, base_id=base_id)
+        agent = sdk.init_agent(agent_id=agent_id)
+        # get extracted response
+        extracted_response = agent.extract(file_path=data)
+        # extracted_response = agent.extractions.start(file_id=data)
+        # extracted_response = agent.extractions.processing_status(file_id=data)
+        # extracted_response = agent.extractions.extracted_response(file_id=data)
+        if save_result:
+            with open(f"{file_name}.txt", "w") as f:
+                f.write(str(extracted_response))
+        return extracted_response
+    except Exception as e:
+        return f"Error: {e}"
+    
+    
+def main():
+    print("Starting...")
+    data_list = [
+        
+    ]
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(sdk_test, data) for data in data_list]
+        for future in concurrent.futures.as_completed(futures):
+            print(future.result())
+            
+if __name__ == "___main__":
+    start = time.time()
+    main()
+    end = time.time()
+    print(f"Completed in {time.time() - start:.2f} seconds")

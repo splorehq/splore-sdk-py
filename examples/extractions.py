@@ -15,7 +15,9 @@ response = extraction_agent.extractions.all_extracted_response()
 print("All Extracted Response:", response)
 
 # Upload file
-file_response = extraction_agent.file_uploader.upload_file(file_path="absolute_file_path")
+file_response = extraction_agent.file_uploader.upload_file(
+    file_path="absolute_file_path"
+)
 
 file_id = file_response.get("fileId")
 print("File uploaded with ID:", file_id)

@@ -13,7 +13,7 @@ agent_id = create_response.get("id")
 get_response = sdk.agents.get_agents(agentId=agent_id)
 print("Get Agent Response:", get_response)
 
-#get all agents
+# get all agents
 all_agents = sdk.agents.get_agents()
 print("all agents", all_agents)
 # Update the agent
