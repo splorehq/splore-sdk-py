@@ -64,6 +64,83 @@ def mock_extraction_service():
         yield instance
 
 
+@pytest.fixture
+def mock_search_service():
+    """
+    Patch SearchService in splore_sdk.sdk (where it's imported) so that AgentSDK.search is a mock.
+    """
+    with patch("splore_sdk.sdk.SearchService") as MockSearchService:
+        instance = MagicMock()
+        instance.set_agent.return_value = None
+        instance.search.return_value = {
+            "results": [
+                {
+                    "title": "Machine Learning - Wikipedia",
+                    "link": "https://en.wikipedia.org/wiki/Machine_learning",
+                    "snippet": "Machine learning is a branch of artificial intelligence..."
+                }
+            ]
+        }
+        instance.get_search_history.return_value = {
+            "items": [
+                {
+                    "id": "search1",
+                    "query": "What is machine learning?",
+                    "createdAt": "2025-04-08T12:00:00Z",
+                    "results": 5
+                }
+            ],
+            "total": 1,
+            "page": 0,
+            "size": 10
+        }
+        MockSearchService.return_value = instance
+        yield instance
+
+
+@pytest.fixture
+def mock_capabilities():
+    """
+    Patch capability classes in splore_sdk.sdk for AgentSDK initialization
+    """
+    with patch("splore_sdk.sdk.ExtractionCapability") as MockExtractionCapability, \
+         patch("splore_sdk.sdk.SearchCapability") as MockSearchCapability:
+        
+        extraction_instance = MagicMock()
+        extraction_instance.extract.return_value = {"data": "extracted_content"}
+        MockExtractionCapability.return_value = extraction_instance
+        
+        search_instance = MagicMock()
+        search_instance.search.return_value = {
+            "results": [
+                {
+                    "title": "Machine Learning - Wikipedia",
+                    "link": "https://en.wikipedia.org/wiki/Machine_learning",
+                    "snippet": "Machine learning is a branch of artificial intelligence..."
+                }
+            ]
+        }
+        search_instance.get_history.return_value = {
+            "items": [
+                {
+                    "id": "search1",
+                    "query": "What is machine learning?",
+                    "createdAt": "2025-04-08T12:00:00Z",
+                    "results": 5
+                }
+            ],
+            "total": 1,
+            "page": 0,
+            "size": 10
+        }
+        MockSearchCapability.return_value = search_instance
+        
+        yield {
+            "extraction": extraction_instance,
+            "search": search_instance
+        }
+
+
 # ----------------------
 # Tests for BaseSDK
 # ----------------------
@@ -143,19 +220,27 @@ class TestSploreSDK:
 class TestAgentSDK:
     @pytest.fixture
     def agent_sdk_instance(
-        self, mock_api_client, mock_file_uploader, mock_extraction_service
+        self, mock_api_client, mock_file_uploader, mock_extraction_service, mock_search_service, mock_capabilities
     ):
         return AgentSDK("test_api_key", "base_1", "agent_123")
 
     def test_initialization(
-        self, agent_sdk_instance, mock_api_client, mock_extraction_service
+        self, agent_sdk_instance, mock_api_client, mock_extraction_service, mock_search_service, mock_capabilities
     ):
         assert agent_sdk_instance.api_key == "test_api_key"
         assert agent_sdk_instance.base_id == "base_1"
         assert agent_sdk_instance.agent_id == "agent_123"
         mock_api_client.validate_api_key.assert_called_once()
-        # ExtractionService should be attached.
+        # ExtractionService should be attached for backwards compatibility
         assert hasattr(agent_sdk_instance, "extractions")
+        # SearchService should be attached for backwards compatibility
+        assert hasattr(agent_sdk_instance, "search")
+        # Capabilities should be attached
+        assert hasattr(agent_sdk_instance, "_extraction")
+        assert hasattr(agent_sdk_instance, "_search")
+        # Property accessors should work
+        assert agent_sdk_instance.extraction == mock_capabilities["extraction"]
+        assert agent_sdk_instance.search == mock_capabilities["search"]
 
     def test_extract_without_file_raises_error(self, agent_sdk_instance):
         with pytest.raises(
@@ -165,52 +250,73 @@ class TestAgentSDK:
             agent_sdk_instance.extract()
 
     def test_extract_with_file_path_success(
-        self, agent_sdk_instance, mock_file_uploader, mock_extraction_service
+        self, agent_sdk_instance, mock_capabilities
     ):
         result = agent_sdk_instance.extract(file_path="dummy.txt")
-        mock_extraction_service.set_agent.assert_called_once_with(agent_id="agent_123")
-        mock_file_uploader.upload_file.assert_called_once_with(
+        mock_capabilities["extraction"].extract.assert_called_once_with(
             file_path="dummy.txt", file_stream=None
-        )
-        mock_extraction_service.start.assert_called_once_with(file_id="file_123")
-        mock_extraction_service.processing_status.assert_called_once_with(
-            file_id="file_123"
-        )
-        mock_extraction_service.extracted_response.assert_called_once_with(
-            file_id="file_123"
         )
         assert result == {"data": "extracted_content"}
 
     def test_extract_with_file_stream_success(
-        self, agent_sdk_instance, mock_file_uploader, mock_extraction_service
+        self, agent_sdk_instance, mock_capabilities
     ):
         fake_stream = MagicMock()
         result = agent_sdk_instance.extract(file_stream=fake_stream)
-        mock_extraction_service.set_agent.assert_called_once_with(agent_id="agent_123")
-        mock_file_uploader.upload_file.assert_called_once_with(
+        mock_capabilities["extraction"].extract.assert_called_once_with(
             file_path=None, file_stream=fake_stream
-        )
-        mock_extraction_service.start.assert_called_once_with(file_id="file_123")
-        mock_extraction_service.processing_status.assert_called_once_with(
-            file_id="file_123"
-        )
-        mock_extraction_service.extracted_response.assert_called_once_with(
-            file_id="file_123"
         )
         assert result == {"data": "extracted_content"}
 
-    def test_extract_polls_until_complete(
-        self, agent_sdk_instance, mock_file_uploader, mock_extraction_service
-    ):
-        mock_file_uploader.upload_file.return_value = "file_123"
-        # Simulate polling: first call returns IN_PROGRESS, then COMPLETED.
-        mock_extraction_service.processing_status.side_effect = [
-            {"fileProcessingStatus": "IN_PROGRESS"},
-            {"fileProcessingStatus": "COMPLETED"},
-        ]
-        # Patch sleep in the splore_sdk.sdk namespace.
-        with patch("splore_sdk.sdk.sleep", return_value=None) as mock_sleep:
-            result = agent_sdk_instance.extract(file_path="dummy.txt")
-        assert mock_extraction_service.processing_status.call_count == 2
-        mock_sleep.assert_called_once_with(10)
-        assert result == {"data": "extracted_content"}
+    # Since polling is now handled internally by the ExtractionCapability class,
+    # we don't need to test it directly in the AgentSDK
+        
+    def test_search_query(self, agent_sdk_instance, mock_capabilities):
+        result = agent_sdk_instance.search_query(
+            query="What is machine learning?",
+            count=5,
+            engine="google"
+        )
+        mock_capabilities["search"].search.assert_called_once_with(
+            query="What is machine learning?",
+            count=5,
+            engine="google"
+        )
+        assert result == {
+            "results": [
+                {
+                    "title": "Machine Learning - Wikipedia",
+                    "link": "https://en.wikipedia.org/wiki/Machine_learning",
+                    "snippet": "Machine learning is a branch of artificial intelligence..."
+                }
+            ]
+        }
+        
+    def test_search_query_without_agent_id(self, agent_sdk_instance):
+        # Remove agent_id to test validation
+        agent_sdk_instance.agent_id = None
+        with pytest.raises(ValueError, match="Agent ID is required for search query."):
+            agent_sdk_instance.search_query(query="What is machine learning?")
+        
+    def test_get_search_history(self, agent_sdk_instance, mock_capabilities):
+        result = agent_sdk_instance.get_search_history(page=0, size=10)
+        mock_capabilities["search"].get_history.assert_called_once_with(page=0, size=10)
+        assert result == {
+            "items": [
+                {
+                    "id": "search1",
+                    "query": "What is machine learning?",
+                    "createdAt": "2025-04-08T12:00:00Z",
+                    "results": 5
+                }
+            ],
+            "total": 1,
+            "page": 0,
+            "size": 10
+        }
+        
+    def test_get_search_history_without_agent_id(self, agent_sdk_instance):
+        # Remove agent_id to test validation
+        agent_sdk_instance.agent_id = None
+        with pytest.raises(ValueError, match="Agent ID is required for search history."):
+            agent_sdk_instance.get_search_history()

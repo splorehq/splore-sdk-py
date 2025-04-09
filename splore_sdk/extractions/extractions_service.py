@@ -1,7 +1,7 @@
 from typing import Optional
 from .validations import StartExtractionInput
 from splore_sdk.core.api_client import APIClient
-
+from splore_sdk.core.compat import model_dump_or_dict
 
 class ExtractionService:
     def __init__(self, api_client: APIClient, agent_id: str):
@@ -33,7 +33,7 @@ class ExtractionService:
         return self.api_client.request(
             method="POST",
             endpoint=self.endpoint("/start"),
-            json=payload.model_dump(),
+            json=model_dump_or_dict(payload),
         )
 
     def processing_status(self, file_id: str):

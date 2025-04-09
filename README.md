@@ -13,7 +13,7 @@ The Splore Python SDK simplifies the process of interacting with the Splore docu
   - [Agent Management](#agent-management)  
   - [Extractions](#extractions)  
   - [File Upload](#file-upload)  
-  - [AWS Integration](#aws-integration)  
+  - [Search](#search)  
 - [Advanced Usage](#advanced-usage)  
 - [FAQ](#faq)  
 - [Support](#support)  
@@ -26,9 +26,11 @@ The Splore Python SDK simplifies the process of interacting with the Splore docu
 - **Agent Management**: Create, update, retrieve, and delete agents.  
 - **File Upload**: Upload documents for processing.  
 - **Extractions**: Extract structured data from documents.  
+- **Search**: Perform web searches and retrieve search history.  
 - **AWS S3 Integration**: Process files directly from S3.  
 - **Task Monitoring**: Track the progress of extraction jobs.  
 - **Error Handling**: Provides meaningful errors and retry mechanisms.  
+- **Python 3.7+ Compatibility**: tested supported version after 3.7.17 can be used for python 3.7 and above.
 
 ---
 
@@ -53,14 +55,9 @@ pip install splore-sdk[examples]
 ### Prerequisites  
 
 1. **API Key and Base ID**: Obtain these from the Splore console.  
-2. **Python 3.8+**: Ensure Python is installed.  
+2. **Python 3.7+**: Ensure Python is installed.  
 
 ### Quick Start Example
-
-```python
-from splore_sdk import __version__
-print("Splore SDK Version:", __version__)
-```
 
 ```python
 from splore_sdk import SploreSDK
@@ -74,41 +71,6 @@ extraction_agent = sdk.init_agent(agent_id="YOUR_AGENT_ID")
 # Basic extraction flow
 extracted_response = extraction_agent.extract(file_path="absolute_file_path")
 print(extracted_response)
-```
-
-```python
-from splore_sdk import SploreSDK
-from time import sleep
-
-# Initialize SDK
-sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
-
-# Get all agents
-agents = sdk.agents.get_agents()
-agent_id = agents[0]["id"]  # Adjust as needed
-
-# Initialize agent
-extraction_agent = sdk.init_agent(agent_id=agent_id)
-
-# use unix based file path.
-upload_response = extraction_agent.file_uploader.upload_file(file_path="path/to/file.pdf")
-
-file_id = upload_response
-print("File uploaded with ID:", file_id)
-
-# Start extraction
-extraction_agent.extractions.start(file_id=file_id)
-
-# Monitor extraction status
-while True:
-    status = extraction_agent.extractions.processing_status(file_id=file_id)
-    if status.get("fileProcessingStatus") == "COMPLETED":
-        break
-    sleep(10)  # Wait before checking again
-
-# Retrieve extracted data
-extracted_data = extraction_agent.extractions.extracted_response(file_id=file_id)
-print("Extracted Data:", extracted_data)
 ```
 
 ---
@@ -151,8 +113,6 @@ delete_response = sdk.agents.delete_agents(agentId=agent_id)
 print("Delete Agent Response:", delete_response)
 ```
 
----
-
 ### 🔹 [Extractions](#extractions)  
 
 Handle document processing and extraction.  
@@ -161,80 +121,68 @@ Handle document processing and extraction.
 
 ```python
 from splore_sdk import SploreSDK
+from time import sleep
 
 # Initialize SDK
 sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
 
-# Initialize Agent for extraction
-extraction_agent = sdk.init_agent(agent_id="YOUR_AGENT_ID")
+# Get all agents
+agents = sdk.agents.get_agents()
+agent_id = agents[0]["id"]  # Adjust as needed
 
-# Basic extraction flow
-extracted_response = extraction_agent.extract(file_path="absolute_file_path")
-print(extracted_response)
-
-# advanced extraction flow
+# Initialize agent
+extraction_agent = sdk.init_agent(agent_id=agent_id)
 
 # Upload file
-with open("sample.pdf", "rb") as file:
-    file_response = extraction_agent.file_uploader.upload_file(file)
-
-# store file ids for next steps
-file_id = file_response
+upload_response = extraction_agent.file_uploader.upload_file(file_path="path/to/file.pdf")
+file_id = upload_response
 print("File uploaded with ID:", file_id)
 
-# Check processing status and look for status_response is INDEXED.
-status_response = extraction_agent.extractions.processing_status(file_id=file_id)
-print("Processing status:", status_response)
-
 # Start extraction
-start_response = extraction_agent.extractions.start(file_id=file_id)
-print("Extraction started:", start_response)
+extraction_agent.extractions.start(file_id=file_id)
 
-# Check processing status and look for status_response is COMPLETED.
-status_response = extraction_agent.extractions.processing_status(file_id=file_id)
-print("Processing status:", status_response)
+# Monitor extraction status
+while True:
+    status = extraction_agent.extractions.processing_status(file_id=file_id)
+    if status.get("fileProcessingStatus") == "COMPLETED":
+        break
+    sleep(10)  # Wait before checking again
 
-# Get extracted response once status is COMPLETED
+# Retrieve extracted data
 extracted_data = extraction_agent.extractions.extracted_response(file_id=file_id)
 print("Extracted Data:", extracted_data)
 ```
 
-#### multiprocessing
+### 🔹 [Search](#search)  
+
+Perform web searches and manage search history.  
+
+#### Example Usage
+
 ```python
 from splore_sdk import SploreSDK
-import multiprocessing
 
-def extract_data(api_key, base_id, agent_id, file_path):
-    sdk = SploreSDK(api_key=api_key, base_id=base_id)
-    extraction_agent = sdk.init_agent(agent_id=agent_id)
-    extracted_data = extraction_agent.extract(file_path=file_path)
-    print("=========================================")
-    print("File Path:", file_path)
-    print("Extracted Data:", extracted_data)
+# Initialize SDK
+sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
 
-if __name__ == "__main__":
-    api_key = "YOUR_API_KEY"
-    base_id = "YOUR_BASE_ID"
-    agent_id = "YOUR_AGENT_ID"
-    file_paths = ["absolute_file_path1", "absolute_file_path2"]
-    processes = []
-    for file_path in file_paths:
-        p = multiprocessing.Process(target=extract_data, args=(api_key, base_id, agent_id, file_path))
-        processes.append(p)
-        p.start()
-    for p in processes:
-        p.join()
+# Initialize agent
+agent_id = "YOUR_AGENT_ID"
+search_agent = sdk.init_agent(agent_id=agent_id)
 
+# Perform a search
+search_results = search_agent.search.search(query="artificial intelligence", count=5, engine="google")
+print("Search Results:", search_results)
+
+# Get search history
+history = search_agent.search.get_history(page=0, size=10)
+print("Search History:", history)
 ```
-
----
 
 ### 🔹 [File Upload](#file-upload)  
 
 Upload files to Splore for processing.  
 
 #### Example Usage
-- example-1: Open and upload file for extraction
 
 ```python
 from splore_sdk import SploreSDK
@@ -242,55 +190,23 @@ from splore_sdk import SploreSDK
 # Initialize SDK
 sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
 
-# use unix based file path.
-with open("path/to/your/file.pdf", "rb") as file:
-    response = sdk.file_uploader.upload_file(file_stream=file)
-    print("Upload Response:", response)
-```
-- example-2: Open and upload file for normal extraction
-
-```python
-from splore_sdk import SploreSDK
-
-# Initialize SDK
-sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
-
+# Upload file with metadata
 metadata = {
-    "file_name": "your_file_name", # it will be saved as 
-    "customeExtractionEnabled": "false", # it will be uploaded for normal extraction
+    "file_name": "document.pdf",
+    "custom_extraction": "false",
+    "is_data_file": "true"
 }
-# use unix based file path.
-with open("path/to/your/file.pdf", "rb") as file:
+
+with open("path/to/file.pdf", "rb") as file:
     response = sdk.file_uploader.upload_file(file_stream=file, metadata=metadata)
     print("Upload Response:", response)
 ```
-
-- example-3: Open and upload file for other than data points.
-
-```python
-from splore_sdk import SploreSDK
-
-# Initialize SDK
-sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
-metadata = {
-    "file_name": "your_file_name", # it will be saved as 
-    "customeExtractionEnabled": "false",
-    "isDataFile": "false",  # it will be uploaded as normal file. can't be used for extraction.
-}
-# use unix based file path.
-with open("path/to/your/file.pdf", "rb") as file:
-    response = sdk.file_uploader.upload_file(file_stream=file, metadata=metadata)
-    print("Upload Response:", response)
-
-```
-
----
 
 ### 🔹 [AWS Integration](#aws-integration)  
 
 Download files from AWS S3 for extraction.  
 
-#### Example Usage  
+#### Example Usage
 
 ```python
 from splore_sdk import SploreSDK
@@ -311,7 +227,7 @@ download_from_s3(s3_uri, file_ref)
 
 # Start extraction
 response = extraction_agent.extract(file_path=file_ref)
-print(response)
+print("Extraction Response:", response)
 ```
 
 ---
@@ -330,8 +246,6 @@ while True:
     sleep(5)  # Set custom polling interval
 ```
 
----
-
 ### 🔸 Error Handling  
 
 Handle errors gracefully for better debugging.  
@@ -342,6 +256,10 @@ try:
 except Exception as e:
     print("Error uploading file:", str(e))
 ```
+
+### 🔸 Python 3.7 Compatibility  
+
+The SDK now supports Python 3.7 and above.
 
 ---
 
@@ -356,6 +274,15 @@ Asynchronous support will be added in a future release.
 ### 3️⃣ Which file formats are supported?  
 Currently, only **PDF files** are supported.  
 
+### 4️⃣ How do I handle search functionality?  
+The SDK provides a dedicated `search` capability that allows you to perform web searches and manage search history. Use the `search.search()` method to perform searches and `search.get_history()` to retrieve search history.  
+
+### 5️⃣ How do I check the SDK version?  
+```python
+from splore_sdk import __version__
+print("Splore SDK Version:", __version__)
+```
+
 ---
 
 ## 🔗 Support  
@@ -369,4 +296,4 @@ For any questions or issues, please:
 
 ## 📜 License  
 
-This SDK is licensed under the MIT License. See [LICENSE](LICENSE) for details.  
+This SDK is licensed under the MIT License. See [LICENSE](LICENSE) for details.

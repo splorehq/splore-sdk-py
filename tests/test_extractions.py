@@ -1,8 +1,11 @@
+from typing import Optional
+from io import StringIO
 import pytest
-from unittest.mock import MagicMock
-from splore_sdk.core.api_client import APIClient
+from unittest.mock import MagicMock, patch
 from splore_sdk.extractions.extractions_service import ExtractionService
 from splore_sdk.extractions.validations import StartExtractionInput
+from splore_sdk.core.compat import model_dump_or_dict
+from splore_sdk.core.api_client import APIClient
 
 
 @pytest.fixture
@@ -30,7 +33,7 @@ def test_start_extraction(extraction_service, mock_api_client):
     file_id = "12345"
     response = extraction_service.start(file_id)
     assert response == {"status": "started"}
-    payload = StartExtractionInput(agent_id="test_agent", file_id=file_id).model_dump()
+    payload = model_dump_or_dict(StartExtractionInput(agent_id="test_agent", file_id=file_id))
     mock_api_client.request.assert_called_once_with(
         method="POST", endpoint="api/rest/v2/extractions/start", json=payload
     )

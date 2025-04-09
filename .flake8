@@ -1,0 +1,8 @@
+[flake8]
+max-line-length = 100
+exclude = .git,__pycache__,build,dist
+# Ignore certain errors:
+# W291: trailing whitespace
+# W293: blank line contains whitespace
+# W292: no newline at end of file
+ignore = W291,W293,W292

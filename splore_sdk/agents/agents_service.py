@@ -1,6 +1,7 @@
 from typing import Optional
 from splore_sdk.core.api_client import APIClient
 from .validations import CreateAgentInput, UpdateAgentInput
+from splore_sdk.core.compat import model_dump_or_dict
 
 
 class AgentService:
@@ -15,14 +16,14 @@ class AgentService:
         return self.api_client.request(
             method="POST",
             endpoint=self.endpoint("agents"),
-            json=agent_payload.model_dump(),
+            json=model_dump_or_dict(agent_payload),
         )
 
     def update_agent(self, agent_payload: UpdateAgentInput):
         return self.api_client.request(
             method="PUT",
             endpoint=self.endpoint("agents"),
-            json=agent_payload.model_dump(),
+            json=model_dump_or_dict(agent_payload),
         )
 
     def get_agents(

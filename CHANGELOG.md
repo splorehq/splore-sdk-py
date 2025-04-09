@@ -1,7 +1,17 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
 ---
-## [0.1.17] - 2025-03-17
+## [0.1.20] - 2025-04-09
+### New Features
+- **Python 3.7 Support**: Added compatibility with Python 3.7
+- **Markdown to HTML Conversion**: Easily convert Markdown responses to HTML
+- **More Modular SDK Architecture**: Better organization of features for cleaner code
+- **Search Capability**: Added support for web searches and search history
+
+---
+## [0.1.18] - 2025-03-17
 ### improvements
 - added example in doc for multiprocessing
 - added file pointer to use least privilleged location
@@ -64,6 +74,26 @@
 - Added structured error handling.
 - documented proper examples
 - incorporated unit tests for stability
+
+---
+## [0.1.0] - 2024-01-01
+
+### Added
+- Initial release of Splore Python SDK
+- Basic agent management functionality
+- File upload and extraction capabilities
+- AWS S3 integration
+
+## [Unreleased]
+
+### Planned
+- Asynchronous support
+- Additional file format support
+- Enhanced error handling
+- More detailed documentation
+
+[0.1.18]: https://github.com/splorehq/splore-sdk-py/compare/v0.1.0...v0.1.18
+[0.1.0]: https://github.com/splorehq/splore-sdk-py/releases/tag/v0.1.0
 
 ---
 
