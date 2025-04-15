@@ -1,4 +1,5 @@
 from splore_sdk import SploreSDK
+from splore_sdk.utils.markdown_converter import md_to_html
 
 # Initialize SDK with API key, base_id from splore console
 sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
@@ -32,4 +33,5 @@ print("Processing status:", status_response)
 
 # Get extracted response
 extracted_data = extraction_agent.extractions.extracted_response(file_id=file_id)
-print("Extracted Data:", extracted_data)
+markdown_texts = map(lambda x: md_to_html(x[response]), extracted_data)
+print("Extracted Data:", markdown_texts)

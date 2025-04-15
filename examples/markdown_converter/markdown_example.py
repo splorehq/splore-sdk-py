@@ -1,13 +1,19 @@
 """
 Example demonstrating how to use the Markdown to HTML converter in splore_sdk.
+
+This example shows various ways to convert markdown content to HTML, including:
+1. Basic conversion using md_to_html
+2. Advanced conversion with custom extensions
+3. Integration with agent responses
+4. Real-world examples of markdown content
 """
 
 import os
 from dotenv import load_dotenv
 
 # Import the utility functions
-from splore_sdk.utils import md_to_html, MarkdownConverter
-from splore_sdk import SploreSDK, AgentSDK
+from splore_sdk.utils import md_to_html
+from splore_sdk import SploreSDK
 
 # Load environment variables from .env file (if it exists)
 load_dotenv()
@@ -40,6 +46,22 @@ def hello_world():
 """
 
 
+# Example markdown with tables and images
+TABLE_MARKDOWN = """
+# Data Analysis Report
+
+## Summary
+
+| Metric | Value | Status |
+|--------|-------|--------|
+| Revenue | $10,000 | 
+| Expenses | $5,000 | 
+| Profit | $5,000 | 
+
+![](https://example.com/analysis-chart.png)
+"""
+
+
 def simple_conversion_example():
     """Demonstrate the basic usage of the md_to_html function."""
     print("\n=== Basic Markdown to HTML Conversion ===\n")
@@ -56,29 +78,80 @@ def simple_conversion_example():
     print("\nHTML output saved to output.html")
 
 
-def advanced_conversion_example():
-    """Demonstrate more advanced usage with custom extensions."""
-    print("\n=== Advanced Markdown to HTML Conversion ===\n")
+def table_conversion_example():
+    """Demonstrate conversion of markdown tables and images."""
+    print("\n=== Table and Image Conversion ===\n")
     
-    # Create a converter instance
-    converter = MarkdownConverter()
+    # Convert markdown with tables to HTML
+    html = md_to_html(TABLE_MARKDOWN)
     
-    # Convert with specific extensions
-    html = converter.convert(
-        EXAMPLE_MARKDOWN,
-        extensions=['extra', 'codehilite', 'toc'],
-        extension_configs={
-            'codehilite': {
-                'linenums': True,
-                'css_class': 'highlight'
-            }
+    # Print the result
+    print(html)
+    
+    # Save to a separate file
+    with open("table_output.html", "w") as f:
+        f.write(html)
+
+
+def format_extracted_response_example():
+    """
+    Demonstrate how to format extracted response data using markdown.
+    
+    This example shows how to take raw extracted data and format it
+    into a well-structured markdown document that can be converted to HTML.
+    """
+    print("\n=== Formatting Extracted Response ===\n")
+    
+    # Example of raw extracted data (simulated)
+    extracted_data = {
+        "title": "Financial Report",
+        "date": "2025-04-09",
+        "metrics": {
+            "revenue": 10000,
+            "expenses": 5000,
+            "profit": 5000
         },
-        safe_mode=True
-    )
+        "summary": "The company has shown strong growth in Q1",
+        "key_points": [
+            "Revenue increased by 20%",
+            "Cost optimization measures were successful",
+            "New product launch contributed to growth"
+        ]
+    }
     
-    # Print the result (just showing first 500 chars)
-    print(f"{html[:500]}...\n")
-    print("(Output truncated for brevity)")
+    # Format the data as markdown
+    markdown_content = f"""
+# {extracted_data['title']}
+
+Date: {extracted_data['date']}
+
+## Summary
+
+{extracted_data['summary']}
+
+## Key Metrics
+
+| Metric | Value |
+|--------|-------|
+| Revenue | ${extracted_data['metrics']['revenue']:,} |
+| Expenses | ${extracted_data['metrics']['expenses']:,} |
+| Profit | ${extracted_data['metrics']['profit']:,} |
+
+## Key Points
+
+{chr(10).join(f"* {point}" for point in extracted_data['key_points'])}
+    """
+    
+    # Convert to HTML
+    html = md_to_html(markdown_content)
+    
+    # Save to file
+    with open("formatted_extract.html", "w") as f:
+        f.write(html)
+    
+    print("\nFormatted extracted data saved to formatted_extract.html")
+    print("\nExample of formatted markdown:")
+    print(markdown_content)
 
 
 def integration_with_agent_example():
@@ -136,7 +209,8 @@ def integration_with_agent_example():
 if __name__ == "__main__":
     # Run the examples
     simple_conversion_example()
-    advanced_conversion_example()
+    table_conversion_example()
+    format_extracted_response_example()
     integration_with_agent_example()
     
     print("\nDone!")

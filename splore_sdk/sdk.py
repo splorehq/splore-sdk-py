@@ -118,7 +118,14 @@ class ExtractionCapability(AgentCapability):
 
         self.service.start(file_id=upload_res)
         self.logger.info("File extraction started")
-
+        file_indexed = False
+        while not file_indexed:
+            extraction_resp = self.service.processing_status(file_id=upload_res)
+            file_processing_status = extraction_resp.get("fileProcessingStatus")
+            file_indexed = file_processing_status == "INDEXED"
+            if not file_indexed:
+                self.logger.info("File indexing not completed, waiting...")
+                sleep(10)
         # Wait for extraction to complete
         extraction_completed = False
         while not extraction_completed:

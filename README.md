@@ -14,6 +14,7 @@ The Splore Python SDK simplifies the process of interacting with the Splore docu
   - [Extractions](#extractions)  
   - [File Upload](#file-upload)  
   - [Search](#search)  
+  - [Utility Functions](#utility-functions)
 - [Advanced Usage](#advanced-usage)  
 - [FAQ](#faq)  
 - [Support](#support)  
@@ -137,7 +138,15 @@ extraction_agent = sdk.init_agent(agent_id=agent_id)
 upload_response = extraction_agent.file_uploader.upload_file(file_path="path/to/file.pdf")
 file_id = upload_response
 print("File uploaded with ID:", file_id)
-
+# monitor indexing
+while True:
+    extraction_resp = extraction_agent.service.processing_status(file_id=upload_res)
+    file_processing_status = extraction_resp.get("fileProcessingStatus")
+    file_indexed = file_processing_status == "INDEXED"
+    if file_indexed:
+        break
+    extraction_agent.logger.info("File indexing not completed, waiting...")
+    sleep(10)
 # Start extraction
 extraction_agent.extractions.start(file_id=file_id)
 
@@ -154,6 +163,8 @@ print("Extracted Data:", extracted_data)
 ```
 
 ### 🔹 [Search](#search)  
+
+**Beta Feature** - The search API is currently in beta and its signature may change in future releases.
 
 Perform web searches and manage search history.  
 
@@ -228,6 +239,84 @@ download_from_s3(s3_uri, file_ref)
 # Start extraction
 response = extraction_agent.extract(file_path=file_ref)
 print("Extraction Response:", response)
+```
+
+### 🔹 [Utility Functions](#utility-functions)
+
+Helper functions to simplify common tasks.
+
+#### Markdown to HTML Conversion
+
+Convert markdown content to HTML using the `md_to_html` utility function.
+
+```python
+from splore_sdk.utils import md_to_html
+
+# Basic usage
+html = md_to_html("# Hello World")
+print(html)  # Output: <h1>Hello World</h1>
+
+# Convert markdown with multiple features
+markdown_text = """
+# Title
+
+This is a **bold** text with *italic* formatting.
+
+1. Ordered list item
+2. Another item
+
+> Blockquote example
+"""
+
+html = md_to_html(markdown_text)
+print(html)
+```
+
+#### Advanced Usage with MarkdownConverter
+
+For more control over the conversion process, use the `MarkdownConverter` class.
+
+```python
+from splore_sdk.utils import MarkdownConverter
+
+# Create a converter instance
+converter = MarkdownConverter()
+
+# Convert with specific extensions
+html = converter.convert(
+    markdown_text,
+    extensions=['extra', 'codehilite', 'toc'],
+    extension_configs={
+        'codehilite': {
+            'linenums': True,
+            'css_class': 'highlight'
+        }
+    },
+    safe_mode=True
+)
+
+# Save to file
+with open("output.html", "w") as f:
+    f.write(html)
+```
+
+#### Formatting Extracted Responses
+
+Use markdown to format extracted data into well-structured documents:
+
+```python
+# Initialize SDK with API key, base_id from splore console
+sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
+
+# Initialize Agent for extraction
+extraction_agent = sdk.init_agent(agent_id="YOUR_AGENT_ID")
+
+# Get extracted response
+extracted_data = extraction_agent.extract(file_path="absolute_file_path")
+
+# Convert extracted responses to HTML
+markdown_texts = map(lambda x: md_to_html(x["response"]), extracted_data)
+print("Extracted Data:", markdown_texts)
 ```
 
 ---

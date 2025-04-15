@@ -3,12 +3,24 @@
 All notable changes to this project will be documented in this file.
 
 ---
+## [0.1.22] - 2025-04-15
+### Improvements
+- fixed broken imports
+- added extraction demo for file indexing monitoring
+
+---
+## [0.1.21] - 2025-04-09
+### Improvements
+- improved documentation to showcase using markdown to html conversion
+- added beta tag to search capability
+
+---
 ## [0.1.20] - 2025-04-09
 ### New Features
 - **Python 3.7 Support**: Added compatibility with Python 3.7
 - **Markdown to HTML Conversion**: Easily convert Markdown responses to HTML
 - **More Modular SDK Architecture**: Better organization of features for cleaner code
-- **Search Capability**: Added support for web searches and search history
+- **Search Capability**: Added support for web searches and search history (Beta - API signature may change)
 
 ---
 ## [0.1.18] - 2025-03-17
