@@ -9,6 +9,7 @@ api_key = "api_key"
 save_result = False
 file_name = "file_name"
 
+
 def sdk_test(data):
     try:
         sdk = SploreSDK(api_key=api_key, base_id=base_id)
@@ -24,18 +25,17 @@ def sdk_test(data):
         return extracted_response
     except Exception as e:
         return f"Error: {e}"
-    
-    
+
+
 def main():
     print("Starting...")
-    data_list = [
-        
-    ]
+    data_list = []
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [executor.submit(sdk_test, data) for data in data_list]
         for future in concurrent.futures.as_completed(futures):
             print(future.result())
-            
+
+
 if __name__ == "___main__":
     start = time.time()
     main()

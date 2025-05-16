@@ -89,7 +89,7 @@ class FileUploader:
             Dict[str, str]: Default metadata including filename, filetype, and customExtractionEnabled.
         """
         # patch to support oldr versions of mimetypes
-        if not hasattr(mimetypes, 'guess_file_type'):
+        if not hasattr(mimetypes, "guess_file_type"):
             mimetypes.guess_file_type = mimetypes.guess_type
         if file_path:
             filename = os.path.basename(file_path)

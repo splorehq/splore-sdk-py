@@ -19,6 +19,7 @@ The Splore Python SDK simplifies the process of interacting with the Splore docu
 - [FAQ](#faq)  
 - [Support](#support)  
 - [License](#license)  
+- [Testing Across Python Versions](#testing-across-python-versions)
 
 ---
 
@@ -122,7 +123,7 @@ Handle document processing and extraction.
 
 ```python
 from splore_sdk import SploreSDK
-from time import sleep
+from splore_sdk.utils.decorators import poll_with_timeout
 
 # Initialize SDK
 sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
@@ -138,28 +139,92 @@ extraction_agent = sdk.init_agent(agent_id=agent_id)
 upload_response = extraction_agent.file_uploader.upload_file(file_path="path/to/file.pdf")
 file_id = upload_response
 print("File uploaded with ID:", file_id)
-# monitor indexing
-while True:
-    extraction_resp = extraction_agent.service.processing_status(file_id=upload_res)
-    file_processing_status = extraction_resp.get("fileProcessingStatus")
-    file_indexed = file_processing_status == "INDEXED"
-    if file_indexed:
-        break
-    extraction_agent.logger.info("File indexing not completed, waiting...")
-    sleep(10)
+
+# Using polling_with_timeout to monitor indexing status
+@poll_with_timeout(
+    condition=lambda resp: resp.get("fileProcessingStatus") == "INDEXED",
+    max_timeout=300,  # 5 minutes
+    min_poll_interval=10,
+    max_poll_interval=60
+)
+def check_indexing_status(file_id):
+    return extraction_agent.service.processing_status(file_id)
+
+try:
+    indexing_status = check_indexing_status(file_id)
+    print("File indexing completed successfully")
+except TimeoutError as e:
+    print(f"Indexing timed out: {str(e)}")
+    # Handle timeout - e.g., retry upload or notify user
+
 # Start extraction
 extraction_agent.extractions.start(file_id=file_id)
 
-# Monitor extraction status
-while True:
-    status = extraction_agent.extractions.processing_status(file_id=file_id)
-    if status.get("fileProcessingStatus") == "COMPLETED":
-        break
-    sleep(10)  # Wait before checking again
+# Using polling_with_timeout to monitor extraction status
+@poll_with_timeout(
+    condition=lambda resp: resp.get("file", {}).get("status") == "COMPLETED",
+    max_timeout=600,  # 10 minutes
+    min_poll_interval=15,
+    max_poll_interval=90
+)
+def check_extraction_status(file_id):
+    return extraction_agent.extractions.processing_status(file_id)
 
-# Retrieve extracted data
-extracted_data = extraction_agent.extractions.extracted_response(file_id=file_id)
-print("Extracted Data:", extracted_data)
+try:
+    extraction_status = check_extraction_status(file_id)
+    print("Extraction completed successfully")
+    # Retrieve extracted data
+    extracted_data = extraction_agent.extractions.extracted_response(file_id=file_id)
+    print("Extracted Data:", extracted_data)
+except TimeoutError as e:
+    print(f"Extraction timed out: {str(e)}")
+    # Handle timeout - e.g., retry extraction or notify user
+```
+#### Example of re-running extraction with existing extraction_id
+```python
+from splore_sdk import SploreSDK
+from splore_sdk.utils.decorators import poll_with_timeout
+
+# Initialize SDK
+sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
+
+# Get all agents
+agents = sdk.agents.get_agents()
+agent_id = agents[0]["id"]  # Adjust as needed
+
+# Initialize agent
+extraction_agent = sdk.init_agent(agent_id=agent_id)
+
+extraction_id = "existing_extraction_id"
+retried_extraction = extraction_agent.extractions.start_extraction_by_extraction_id(extraction_id)
+print("Retried Extraction Response:", retried_extraction)
+
+# Get extraction details by extraction_id
+extraction_details = extraction_agent.extractions.get_extraction_by_extraction_id(extraction_id)
+print("Extraction Details:", extraction_details)
+```
+
+#### Example of retry_extraction
+```python
+from splore_sdk import SploreSDK
+from splore_sdk.utils.decorators import poll_with_timeout
+
+# Initialize SDK
+sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
+
+# Get all agents
+agents = sdk.agents.get_agents()
+agent_id = agents[0]["id"]  # Adjust as needed
+
+# Initialize agent
+extraction_agent = sdk.init_agent(agent_id=agent_id)
+
+# Example of retrying extraction using retry_extraction method
+extraction_id = "existing_extraction_id"
+
+# Start retrying extraction
+retried_extraction = extraction_agent.retry_extraction(extraction_id, max_poll_timeout=600)  # 10 minutes timeout
+print("Retry Extraction Response:", retried_extraction)
 ```
 
 ### 🔹 [Search](#search)  
@@ -386,3 +451,56 @@ For any questions or issues, please:
 ## 📜 License  
 
 This SDK is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+## Testing Across Python Versions
+
+This package supports Python 3.7 through 3.13. We use different build systems based on the Python version:
+
+- **Python 3.7**: Uses setuptools (via setup.py)
+- **Python 3.8+**: Uses PDM (via pyproject.toml)
+
+### Available Python Versions
+
+The testing scripts are configured to work with the following Python versions:
+- 3.7.17
+- 3.8.20
+- 3.9.4
+- 3.10.16
+- 3.11.11
+- 3.12.0/3.12.9
+- 3.13.2
+
+### Running Tests
+
+1. Ensure you have [pyenv](https://github.com/pyenv/pyenv) installed to manage Python versions
+2. The testing script will automatically detect which of the above versions are installed on your system
+
+3. Run the test script which will automatically detect and test all available Python versions:
+   ```bash
+   # Run tests on all available Python versions
+   ./test_all_versions.sh
+   ```
+
+For testing only on Python 3.7:
+
+```bash
+# Test Python 3.7 using a direct approach with virtualenv (recommended)
+./test_py37_direct.sh
+
+# Or test Python 3.7 using a custom tox approach
+./test_py37_tox.sh
+```
+
+For testing on specific Python versions:
+
+```bash
+# Test specific Python versions with tox
+tox -e py38,py39,py310 --skip-missing-interpreters
+```
+
+### Known Issues
+
+- Python 3.7 requires special handling due to syntax incompatibilities with newer pip versions
+- Virtual environments must be created with the correct Python binary to avoid issues
+- The scripts now detect installed Python versions to avoid errors with missing interpreters
+- Direct testing approach is recommended for Python 3.7 as it's more reliable than using tox

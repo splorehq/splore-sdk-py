@@ -77,7 +77,7 @@ def mock_search_service():
                 {
                     "title": "Machine Learning - Wikipedia",
                     "link": "https://en.wikipedia.org/wiki/Machine_learning",
-                    "snippet": "Machine learning is a branch of artificial intelligence..."
+                    "snippet": "Machine learning is a branch of artificial intelligence...",
                 }
             ]
         }
@@ -87,12 +87,12 @@ def mock_search_service():
                     "id": "search1",
                     "query": "What is machine learning?",
                     "createdAt": "2025-04-08T12:00:00Z",
-                    "results": 5
+                    "results": 5,
                 }
             ],
             "total": 1,
             "page": 0,
-            "size": 10
+            "size": 10,
         }
         MockSearchService.return_value = instance
         yield instance
@@ -103,20 +103,23 @@ def mock_capabilities():
     """
     Patch capability classes in splore_sdk.sdk for AgentSDK initialization
     """
-    with patch("splore_sdk.sdk.ExtractionCapability") as MockExtractionCapability, \
-         patch("splore_sdk.sdk.SearchCapability") as MockSearchCapability:
-        
+    with patch(
+        "splore_sdk.sdk.ExtractionCapability"
+    ) as MockExtractionCapability, patch(
+        "splore_sdk.sdk.SearchCapability"
+    ) as MockSearchCapability:
+
         extraction_instance = MagicMock()
         extraction_instance.extract.return_value = {"data": "extracted_content"}
         MockExtractionCapability.return_value = extraction_instance
-        
+
         search_instance = MagicMock()
         search_instance.search.return_value = {
             "results": [
                 {
                     "title": "Machine Learning - Wikipedia",
                     "link": "https://en.wikipedia.org/wiki/Machine_learning",
-                    "snippet": "Machine learning is a branch of artificial intelligence..."
+                    "snippet": "Machine learning is a branch of artificial intelligence...",
                 }
             ]
         }
@@ -126,19 +129,16 @@ def mock_capabilities():
                     "id": "search1",
                     "query": "What is machine learning?",
                     "createdAt": "2025-04-08T12:00:00Z",
-                    "results": 5
+                    "results": 5,
                 }
             ],
             "total": 1,
             "page": 0,
-            "size": 10
+            "size": 10,
         }
         MockSearchCapability.return_value = search_instance
-        
-        yield {
-            "extraction": extraction_instance,
-            "search": search_instance
-        }
+
+        yield {"extraction": extraction_instance, "search": search_instance}
 
 
 # ----------------------
@@ -220,12 +220,22 @@ class TestSploreSDK:
 class TestAgentSDK:
     @pytest.fixture
     def agent_sdk_instance(
-        self, mock_api_client, mock_file_uploader, mock_extraction_service, mock_search_service, mock_capabilities
+        self,
+        mock_api_client,
+        mock_file_uploader,
+        mock_extraction_service,
+        mock_search_service,
+        mock_capabilities,
     ):
         return AgentSDK("test_api_key", "base_1", "agent_123")
 
     def test_initialization(
-        self, agent_sdk_instance, mock_api_client, mock_extraction_service, mock_search_service, mock_capabilities
+        self,
+        agent_sdk_instance,
+        mock_api_client,
+        mock_extraction_service,
+        mock_search_service,
+        mock_capabilities,
     ):
         assert agent_sdk_instance.api_key == "test_api_key"
         assert agent_sdk_instance.base_id == "base_1"
@@ -270,34 +280,30 @@ class TestAgentSDK:
 
     # Since polling is now handled internally by the ExtractionCapability class,
     # we don't need to test it directly in the AgentSDK
-        
+
     def test_search_query(self, agent_sdk_instance, mock_capabilities):
         result = agent_sdk_instance.search_query(
-            query="What is machine learning?",
-            count=5,
-            engine="google"
+            query="What is machine learning?", count=5, engine="google"
         )
         mock_capabilities["search"].search.assert_called_once_with(
-            query="What is machine learning?",
-            count=5,
-            engine="google"
+            query="What is machine learning?", count=5, engine="google"
         )
         assert result == {
             "results": [
                 {
                     "title": "Machine Learning - Wikipedia",
                     "link": "https://en.wikipedia.org/wiki/Machine_learning",
-                    "snippet": "Machine learning is a branch of artificial intelligence..."
+                    "snippet": "Machine learning is a branch of artificial intelligence...",
                 }
             ]
         }
-        
+
     def test_search_query_without_agent_id(self, agent_sdk_instance):
         # Remove agent_id to test validation
         agent_sdk_instance.agent_id = None
         with pytest.raises(ValueError, match="Agent ID is required for search query."):
             agent_sdk_instance.search_query(query="What is machine learning?")
-        
+
     def test_get_search_history(self, agent_sdk_instance, mock_capabilities):
         result = agent_sdk_instance.get_search_history(page=0, size=10)
         mock_capabilities["search"].get_history.assert_called_once_with(page=0, size=10)
@@ -307,16 +313,18 @@ class TestAgentSDK:
                     "id": "search1",
                     "query": "What is machine learning?",
                     "createdAt": "2025-04-08T12:00:00Z",
-                    "results": 5
+                    "results": 5,
                 }
             ],
             "total": 1,
             "page": 0,
-            "size": 10
+            "size": 10,
         }
-        
+
     def test_get_search_history_without_agent_id(self, agent_sdk_instance):
         # Remove agent_id to test validation
         agent_sdk_instance.agent_id = None
-        with pytest.raises(ValueError, match="Agent ID is required for search history."):
+        with pytest.raises(
+            ValueError, match="Agent ID is required for search history."
+        ):
             agent_sdk_instance.get_search_history()

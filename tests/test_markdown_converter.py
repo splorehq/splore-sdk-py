@@ -14,12 +14,12 @@ class TestMarkdownConverter:
         markdown_text = "# Hello World"
         html = md_to_html(markdown_text)
         assert "<h1>Hello World</h1>" in html
-        
+
     def test_md_to_html_empty_input(self):
         """Test conversion with empty input."""
         assert md_to_html("") == ""
         assert md_to_html(None) == ""
-    
+
     def test_md_to_html_complex_input(self):
         """Test conversion with more complex markdown."""
         markdown_text = """
@@ -46,14 +46,14 @@ Code block
         assert "<li>List item 1</li>" in html
         assert "<pre>" in html  # Code block
         assert '<a href="https://example.com">Link</a>' in html
-    
+
     def test_markdown_converter_class(self):
         """Test the MarkdownConverter class."""
         converter = MarkdownConverter()
         markdown_text = "# Test Heading"
         html = converter.convert(markdown_text)
         assert "<h1>Test Heading</h1>" in html
-    
+
     def test_markdown_converter_with_extensions(self):
         """Test conversion with extensions."""
         converter = MarkdownConverter()
@@ -64,13 +64,10 @@ def hello():
 ```
 """
         # With codehilite extension
-        html = converter.convert(
-            markdown_text, 
-            extensions=['extra', 'codehilite']
-        )
+        html = converter.convert(markdown_text, extensions=["extra", "codehilite"])
         # The codehilite extension adds CSS classes
         assert "codehilite" in html or "highlight" in html
-    
+
     def test_markdown_converter_safety(self):
         """Test that potentially dangerous HTML is handled safely."""
         converter = MarkdownConverter()
@@ -81,14 +78,14 @@ def hello():
         assert "<script>" not in html
         # Should be escaped as &lt;script&gt; or similar
         assert "&lt;" in html or "<" not in html
-    
+
     def test_markdown_sanitization(self):
         """Test the sanitization methods."""
         converter = MarkdownConverter()
         # Test input sanitization
         sanitized = converter._sanitize_input("<script>alert('test');</script>")
         assert "<script>" not in sanitized
-        
+
         # Test output sanitization
         sanitized = converter._sanitize_output("<script>alert('test');</script>")
         assert "<script>" not in sanitized

@@ -3,6 +3,7 @@ from .validations import StartExtractionInput
 from splore_sdk.core.api_client import APIClient
 from splore_sdk.core.compat import model_dump_or_dict
 
+
 class ExtractionService:
     def __init__(self, api_client: APIClient, agent_id: str):
         self.api_client = api_client
@@ -67,4 +68,17 @@ class ExtractionService:
         params = {"page": page, "size": size, "compact": compact}
         return self.api_client.request(
             method="GET", endpoint=self.endpoint(""), params=params
+        )
+
+    def extracted_response_by_extraction_id(
+        self, extraction_id: str, version: Optional[int] = 1
+    ):
+        params = {"version": version}
+        return self.api_client.request(
+            method="GET", endpoint=self.endpoint(f"/{extraction_id}"), params=params
+        )
+
+    def start_extraction_by_extraction_id(self, extraction_id: str):
+        return self.api_client.request(
+            method="POST", endpoint=self.endpoint(f"/{extraction_id}"), json={}
         )

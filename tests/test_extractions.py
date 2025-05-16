@@ -33,7 +33,9 @@ def test_start_extraction(extraction_service, mock_api_client):
     file_id = "12345"
     response = extraction_service.start(file_id)
     assert response == {"status": "started"}
-    payload = model_dump_or_dict(StartExtractionInput(agent_id="test_agent", file_id=file_id))
+    payload = model_dump_or_dict(
+        StartExtractionInput(agent_id="test_agent", file_id=file_id)
+    )
     mock_api_client.request.assert_called_once_with(
         method="POST", endpoint="api/rest/v2/extractions/start", json=payload
     )

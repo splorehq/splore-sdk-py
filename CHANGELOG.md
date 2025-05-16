@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 
 ---
+## [0.1.29] - 2025-05-16
+### new features
+- **polling_with_timeout**: utility function added as decorator to poll any function.
+- **retry_with_timeout**: utility function added as decorator to retry any function
+- **retry_extraction_by_extraction_id**: extraction can be re-run or retried with older extraction_id
+### improvements
+- **logger**: logger is improved to increase tracability in case of multithreading as well.
+
+---
+## [0.1.28] - 2025-05-12
+### Improvements
+- **Repository Cleanup**: Removed unnecessary script files and streamlined the development workflow
+- **Build System Improvements**: Enhanced publish script with proper virtual environment support
+- **Testing Enhancements**: Consolidated test scripts for better maintainability
+
+---
+## [0.1.27] - 2025-05-12
+### Improvements
+- **Extended Python Support**: Added testing and compatibility for Python 3.13
+- **Testing Framework Improvements**: Enhanced test suite to support all Python versions from 3.7 to 3.13
+- **Dependency Management**: Fixed dependency conflicts for Python 3.7 compatibility
+- **Build System**: Unified build system approach across Python versions
+
+---
+## [0.1.23] - 2025-05-07
+### Bug fixes
+- fixed package import issue
+---
 ## [0.1.22] - 2025-04-15
 ### Improvements
 - fixed broken imports
