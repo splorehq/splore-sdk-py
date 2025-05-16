@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 ---
-## [0.1.30] - 2025-05=16
+## [0.1.31] - 2025-05=16
 ### Improvements
 - **decorators** documentations improved to showcase usage of decorators
 ---
