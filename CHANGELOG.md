@@ -1,7 +1,10 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-
+---
+## [0.1.30] - 2025-05=16
+### Improvements
+- **decorators** documentations improved to showcase usage of decorators
 ---
 ## [0.1.29] - 2025-05-16
 ### new features

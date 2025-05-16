@@ -70,9 +70,20 @@ sdk = SploreSDK(api_key="YOUR_API_KEY", base_id="YOUR_BASE_ID")
 # Initialize Agent for extraction
 extraction_agent = sdk.init_agent(agent_id="YOUR_AGENT_ID")
 
-# Basic extraction flow
-extracted_response = extraction_agent.extract(file_path="absolute_file_path")
-print(extracted_response)
+try:
+    # Basic extraction flow with custom polling timeout
+    # Set max_poll_timeout to 300 seconds (5 minutes)
+    extracted_response = extraction_agent.extract(
+        file_path="absolute_file_path",
+        max_poll_timeout=300  # 5 minutes
+    )
+    print("Extraction completed successfully:", extracted_response)
+except TimeoutError as e:
+    print(f"Extraction timed out after 5 minutes: {str(e)}")
+    # Handle timeout - e.g., retry or notify user
+except Exception as e:
+    print(f"An error occurred during extraction: {str(e)}")
+    # Handle other potential errors
 ```
 
 ---
@@ -382,6 +393,59 @@ extracted_data = extraction_agent.extract(file_path="absolute_file_path")
 # Convert extracted responses to HTML
 markdown_texts = map(lambda x: md_to_html(x["response"]), extracted_data)
 print("Extracted Data:", markdown_texts)
+```
+
+### Decorator Examples
+
+#### retry_with_timeout Example
+```python
+from splore_sdk.utils.decorators import retry_with_timeout
+
+# Function that might fail
+@retry_with_timeout(max_retries=3, backoff_factor=1, max_timeout=10)
+def fetch_data(url):
+    """Fetch data with retry logic"""
+    try:
+        # Simulate network request
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print(f"Request failed: {str(e)}")
+        raise
+
+# Usage
+try:
+    data = fetch_data("https://api.example.com/data")
+    print("Data fetched successfully:", data)
+except Exception as e:
+    print(f"Failed to fetch data after retries: {str(e)}")
+```
+
+#### poll_with_timeout Example
+```python
+from splore_sdk.utils.decorators import poll_with_timeout
+
+# Function that needs polling
+@poll_with_timeout(
+    condition=lambda resp: resp.get("status") == "COMPLETED",
+    max_timeout=30,  # 30 seconds
+    min_poll_interval=2,  # 2 seconds
+    max_poll_interval=5  # 5 seconds
+)
+def check_status(task_id):
+    """Check task status with polling"""
+    # Simulate status check
+    status = get_task_status(task_id)
+    print(f"Current status: {status}")
+    return status
+
+# Usage
+try:
+    final_status = check_status("task123")
+    print("Task completed successfully")
+except TimeoutError as e:
+    print(f"Task monitoring timed out: {str(e)}")
 ```
 
 ---
