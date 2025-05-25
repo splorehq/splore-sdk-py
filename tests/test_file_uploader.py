@@ -43,7 +43,7 @@ def test_upload_file_with_file_path_success(tmp_path):
         # The file ID should be "file_456" as parsed by splitting the URL.
         assert file_id == "file_456"
         # Since file_path was provided, no temporary file was created or tracked.
-        assert uploader.temp_files == []
+        assert uploader._get_temp_files() == []
 
 
 def test_upload_file_with_file_stream_success(tmp_path):
@@ -73,7 +73,7 @@ def test_upload_file_with_file_stream_success(tmp_path):
             assert file_id == "file_789"
             # Ensure that the stream-to-temp writing was called.
             mock_write.assert_called_once()
-            assert uploader.temp_files == []
+            assert uploader._get_temp_files() == []
 
 
 def test_generate_default_metadata_with_file_path(tmp_path):
@@ -114,11 +114,11 @@ def test_cleanup_temp_files(tmp_path):
     temp_file = tmp_path / "temp.txt"
     temp_file.write_text("data")
     temp_file_path = str(temp_file.resolve())
-    uploader.temp_files.append(temp_file_path)
+    uploader._get_temp_files().append(temp_file_path)
 
     # Ensure file exists.
     assert os.path.exists(temp_file_path)
     uploader.cleanup_temp_files()
     # After cleanup, the file should be removed and temp_files list cleared.
     assert not os.path.exists(temp_file_path)
-    assert uploader.temp_files == []
+    assert uploader._get_temp_files() == []

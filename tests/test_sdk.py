@@ -264,7 +264,7 @@ class TestAgentSDK:
     ):
         result = agent_sdk_instance.extract(file_path="dummy.txt")
         mock_capabilities["extraction"].extract.assert_called_once_with(
-            file_path="dummy.txt", file_stream=None
+            file_path="dummy.txt", file_stream=None, max_poll_timeout=1200
         )
         assert result == {"data": "extracted_content"}
 
@@ -274,7 +274,7 @@ class TestAgentSDK:
         fake_stream = MagicMock()
         result = agent_sdk_instance.extract(file_stream=fake_stream)
         mock_capabilities["extraction"].extract.assert_called_once_with(
-            file_path=None, file_stream=fake_stream
+            file_path=None, file_stream=fake_stream, max_poll_timeout=1200
         )
         assert result == {"data": "extracted_content"}
 

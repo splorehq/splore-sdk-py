@@ -1,3 +1,4 @@
+import random
 import time
 from functools import wraps
 from splore_sdk.core.logger import sdk_logger
@@ -24,7 +25,6 @@ def retry_with_backoff(
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            nonlocal max_retries
             func_name = func.__name__
             retries_left = max_retries
             start_time = time.time()
@@ -47,7 +47,10 @@ def retry_with_backoff(
                 except Exception as e:
                     retries_left -= 1
                     elapsed = time.time() - start_time
-                    sleep_time = min(sleep_time * 2, 10)  # Exponential backoff
+                    jitter = random.uniform(-0.1, 0.1) * sleep_time  # Add ±10% jitter
+                    sleep_time = min(
+                        (sleep_time * 2) + jitter, 10
+                    )  # Exponential backoff with jitter
 
                     if retries_left > 0:
                         sdk_logger.warning(

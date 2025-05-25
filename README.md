@@ -159,7 +159,7 @@ print("File uploaded with ID:", file_id)
     max_poll_interval=60
 )
 def check_indexing_status(file_id):
-    return extraction_agent.service.processing_status(file_id)
+    return extraction_agent.extractions.processing_status(file_id)
 
 try:
     indexing_status = check_indexing_status(file_id)

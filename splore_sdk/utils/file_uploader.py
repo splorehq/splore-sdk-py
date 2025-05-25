@@ -1,5 +1,6 @@
 import os
 import tempfile
+import threading
 from typing import Optional, IO, Dict
 from splore_sdk.core.constants import FILE_UPLOAD_URL
 from tusclient import client
@@ -28,6 +29,8 @@ class ProgressUploader(Uploader):
 
 
 class FileUploader:
+    _thread_local = threading.local()
+
     def __init__(
         self,
         api_key: str,
@@ -46,10 +49,24 @@ class FileUploader:
         self.tus_client = client.TusClient(
             FILE_UPLOAD_URL, headers={"X-API-KEY": api_key}
         )
-        self.temp_files = []
+        # Thread-local state
+        if not hasattr(self._thread_local, "temp_files"):
+            self._thread_local.temp_files = []
+        if not hasattr(self._thread_local, "temp_files_lock"):
+            self._thread_local.temp_files_lock = threading.Lock()
         self.auto_cleanup = auto_cleanup
         self.base_id = base_id
         self.user_id = user_id
+
+    def _get_temp_files(self):
+        return self._thread_local.temp_files
+
+    def _get_temp_files_lock(self):
+        return self._thread_local.temp_files_lock
+
+    def _is_temp_file(self, file_path: str) -> bool:
+        with self._get_temp_files_lock():
+            return file_path in self._get_temp_files()
 
     def create_temp_file_destination(self, file_extension: str) -> str:
         """
@@ -68,12 +85,16 @@ class FileUploader:
 
         # Ensure the directory exists
         temp_dir = os.path.join(script_directory, "temp_files")
-        os.makedirs(temp_dir, exist_ok=True)
+        try:
+            os.makedirs(temp_dir, exist_ok=True)
+        except FileExistsError:
+            pass  # Directory already exists, safe to ignore
         tmp_file = tempfile.NamedTemporaryFile(
             suffix=extension, dir=temp_dir, delete=False
         )
         tmp_file.close()
-        self.temp_files.append(tmp_file.name)
+        with self._get_temp_files_lock():
+            self._get_temp_files().append(tmp_file.name)
         return tmp_file.name
 
     def generate_default_metadata(
@@ -102,14 +123,16 @@ class FileUploader:
         filetype = mime_type if mime_type else filetype
         timestamp = int(time.time())
         filename = f"{timestamp}_{filename}"
-        return {
+        metadata = {
             "filename": filename,
             "filetype": filetype,
             "customExtractionEnabled": True,
             "isDataFile": True,
             "baseId": self.base_id,
-            "userId": self.user_id if self.user_id else None,
         }
+        if self.user_id:
+            metadata["userId"] = self.user_id
+        return metadata
 
     def encode_metadata(self, metadata: Dict[str, any]) -> Dict[str, str]:
         """
@@ -190,7 +213,7 @@ class FileUploader:
             if (
                 self.auto_cleanup
                 and temp_file_path
-                and temp_file_path in self.temp_files
+                and self._is_temp_file(temp_file_path)
             ):
                 self.cleanup_temp_files()
 
@@ -209,9 +232,11 @@ class FileUploader:
         """
         Deletes all temporary files tracked by the uploader.
         """
-        for file_path in self.temp_files:
+        with self._get_temp_files_lock():
+            temp_files_copy = list(self._get_temp_files())
+            self._get_temp_files().clear()
+        for file_path in temp_files_copy:
             try:
                 os.remove(file_path)
             except OSError:
                 pass
-        self.temp_files.clear()

@@ -3,7 +3,7 @@ import os
 import uuid
 import threading
 import functools
-from typing import Callable, Any, Optional, Dict, Union
+from typing import Callable, Optional
 
 LOG_LEVELS = {
     "debug": logging.DEBUG,

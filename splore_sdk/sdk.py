@@ -1,7 +1,7 @@
 from abc import ABC
 from typing import IO, Optional, Dict
 from splore_sdk.core.api_client import APIClient
-from splore_sdk.core.logger import sdk_logger, with_logging_context, generate_new_uuid
+from splore_sdk.core.logger import sdk_logger, with_logging_context
 from splore_sdk.extractions.extractions_service import ExtractionService
 from splore_sdk.search.search_service import SearchService
 from splore_sdk.agents.agents_service import AgentService
@@ -302,12 +302,19 @@ class AgentSDK(BaseSDK):
 
     # Backward compatibility methods
     def extract(
-        self, file_path: Optional[str] = None, file_stream: Optional[IO] = None
+        self,
+        file_path: Optional[str] = None,
+        file_stream: Optional[IO] = None,
+        max_poll_timeout: Optional[float] = 1200,
     ) -> Dict:
         """Backward compatibility method for extraction"""
         if file_path is None and file_stream is None:
             raise ValueError("One of file_path or file_stream must be provided.")
-        return self.extraction.extract(file_path=file_path, file_stream=file_stream)
+        return self.extraction.extract(
+            file_path=file_path,
+            file_stream=file_stream,
+            max_poll_timeout=max_poll_timeout,
+        )
 
     def search_query(
         self, query: str, count: Optional[int] = 10, engine: Optional[str] = "google"

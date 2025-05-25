@@ -1,8 +1,15 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+
 ---
-## [0.1.31] - 2025-05=16
+## [0.1.34] - 2025-05-25
+### Improvements
+- **Retry Mechanism**: Enhanced retry logic with exponential backoff and jitter to prevent resource contention and improve reliability
+---
+
+---
+## [0.1.33] - 2025-05-16
 ### Improvements
 - **decorators** documentations improved to showcase usage of decorators
 ---

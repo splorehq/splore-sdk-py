@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="splore-sdk",
-    version="0.1.31",
+    version="0.1.34",
     author="DilipCoder",
     author_email="dilips.ven@splore.com",
     description="Python SDK for Splore",

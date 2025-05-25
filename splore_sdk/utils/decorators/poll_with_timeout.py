@@ -1,14 +1,37 @@
+import math
+import random
 import time
 from typing import Callable, Any
 from functools import wraps
 from splore_sdk.core.logger import sdk_logger
 
 
+def generate_intervals(min_poll_interval, max_poll_interval, poll_interval_change_rate):
+    # Calculate number of steps
+    n_steps = (
+        int(math.log(max_poll_interval / min_poll_interval, poll_interval_change_rate))
+        + 1
+    )
+
+    # Increasing sequence
+    inc = [min_poll_interval * (poll_interval_change_rate**i) for i in range(n_steps)]
+    # Ensure max is included (in case of floating point error)
+    if inc[-1] < max_poll_interval:
+        inc.append(max_poll_interval)
+
+    # Decreasing sequence
+    dec = [max_poll_interval / (poll_interval_change_rate**i) for i in range(n_steps)]
+    if dec[-1] > min_poll_interval:
+        dec.append(min_poll_interval)
+
+    return inc, dec
+
+
 def poll_with_timeout(
     condition: Callable[[Any], bool] = lambda x: x is not None,
     max_timeout: float = 30,
-    min_poll_interval: float = 0.1,
-    max_poll_interval: float = 1,
+    min_poll_interval: float = 1,
+    max_poll_interval: float = 5,
     poll_interval_change_rate: float = 2,
 ):
     """
@@ -37,7 +60,11 @@ def poll_with_timeout(
             result = None
             poll_interval = min_poll_interval
             func_name = func.__name__
-
+            inc, dec = generate_intervals(
+                min_poll_interval, max_poll_interval, poll_interval_change_rate
+            )
+            intervals = [interval for pair in zip(inc, dec) for interval in pair]
+            jitter = 0.2
             sdk_logger.debug(f"Starting polling operation for {func_name}")
             attempt_count = 0
 
@@ -51,13 +78,10 @@ def poll_with_timeout(
                         f"Poll attempt {attempt_count} for {func_name}: condition not met after {elapsed:.2f}s, waiting {poll_interval:.2f}s"
                     )
 
-                    poll_interval = min(
-                        poll_interval * poll_interval_change_rate, max_poll_interval
+                    sleep_time = intervals[attempt_count - 1] + random.uniform(
+                        -jitter, jitter
                     )
-                    time.sleep(poll_interval)
-                    poll_interval = max(
-                        poll_interval / poll_interval_change_rate, min_poll_interval
-                    )
+                    time.sleep(sleep_time)
                 else:
                     elapsed = time.time() - start_time
                     sdk_logger.debug(
