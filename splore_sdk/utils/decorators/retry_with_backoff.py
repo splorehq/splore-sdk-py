@@ -7,7 +7,7 @@ from splore_sdk.core.logger import sdk_logger
 def retry_with_backoff(
     max_retries: int = 3,
     backoff_factor: float = 0.5,
-    max_timeout: float = 30,
+    max_timeout: float = 300,
 ):
     """
     Retry a function with exponential backoff.
