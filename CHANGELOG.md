@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 
 ---
+## [0.1.38] - 2025-06-23
+### Improvements
+- **Testability**: gevent monkey patching support added to improve testability
+---
 ## [0.1.37] - 2025-05-25
 ### Improvements
 - **Retry Mechanism**: Enhanced retry logic with exponential backoff and jitter to prevent resource contention and improve reliability
