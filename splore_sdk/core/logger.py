@@ -3,7 +3,7 @@ import os
 import uuid
 import threading
 import functools
-from typing import Callable, Optional
+from typing import Callable, Optional, Any
 
 LOG_LEVELS = {
     "debug": logging.DEBUG,
@@ -13,8 +13,23 @@ LOG_LEVELS = {
     "critical": logging.CRITICAL,
 }
 
-# Thread-local storage for UUID identifiers
-_thread_local = threading.local()
+
+def _get_thread_local() -> Any:
+    """
+    Get or create thread-local storage in a gevent-compatible way.
+    This ensures thread-local storage is initialized when first accessed,
+    which works correctly with gevent's monkey patching.
+    """
+    try:
+        import gevent.local
+
+        local_cls = gevent.local.local
+    except ImportError:
+        local_cls = threading.local
+
+    if not hasattr(_get_thread_local, "_storage"):
+        _get_thread_local._storage = local_cls()
+    return _get_thread_local._storage
 
 
 def _get_or_create_uuid() -> str:
@@ -24,9 +39,10 @@ def _get_or_create_uuid() -> str:
     Returns:
         str: The UUID for the current thread.
     """
-    if not hasattr(_thread_local, "uuid"):
-        _thread_local.uuid = str(uuid.uuid4())
-    return _thread_local.uuid
+    thread_local = _get_thread_local()
+    if not hasattr(thread_local, "uuid"):
+        thread_local.uuid = str(uuid.uuid4())
+    return thread_local.uuid
 
 
 def generate_new_uuid() -> str:
@@ -37,8 +53,9 @@ def generate_new_uuid() -> str:
     Returns:
         str: The new UUID generated for the thread.
     """
-    _thread_local.uuid = str(uuid.uuid4())
-    return _thread_local.uuid
+    thread_local = _get_thread_local()
+    thread_local.uuid = str(uuid.uuid4())
+    return thread_local.uuid
 
 
 def with_logging_context(
@@ -135,7 +152,6 @@ def setup_logger(name: str, log_level: str = "info") -> UUIDLoggerAdapter:
             "%(asctime)s - %(name)s - %(threadName)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-
         logger.addHandler(ch)
 
     # Wrap the logger with UUID adapter - UUID is added automatically to every log message

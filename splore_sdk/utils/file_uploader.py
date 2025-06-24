@@ -29,8 +29,6 @@ class ProgressUploader(Uploader):
 
 
 class FileUploader:
-    _thread_local = threading.local()
-
     def __init__(
         self,
         api_key: str,
@@ -49,6 +47,7 @@ class FileUploader:
         self.tus_client = client.TusClient(
             FILE_UPLOAD_URL, headers={"X-API-KEY": api_key}
         )
+        self._thread_local = threading.local()
         # Thread-local state
         if not hasattr(self._thread_local, "temp_files"):
             self._thread_local.temp_files = []
@@ -59,9 +58,13 @@ class FileUploader:
         self.user_id = user_id
 
     def _get_temp_files(self):
+        if not hasattr(self._thread_local, "temp_files"):
+            self._thread_local.temp_files = []
         return self._thread_local.temp_files
 
     def _get_temp_files_lock(self):
+        if not hasattr(self._thread_local, "temp_files_lock"):
+            self._thread_local.temp_files_lock = threading.Lock()
         return self._thread_local.temp_files_lock
 
     def _is_temp_file(self, file_path: str) -> bool:
